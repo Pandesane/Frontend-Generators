@@ -142,6 +142,9 @@ sub gen_resource_interface {
 
     $template = qq{
         export default interface I$resource_name_singular_import {
+          id: string,
+          // create_at: string,
+          // updated_at: string,
           $gen_fields
         }
     };
@@ -556,12 +559,12 @@ sub generate_divs {
         my ( $field, $field_type ) = split( ":", $i );
         if ( $field_type eq "file" ) {
             $gen_divs .= qq{
-            <!-- <div class="font-semibold mt-2">{$resource_name_singular.$field}</div> -->
+            <!-- <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div> -->
         };
         }
         else {
             $gen_divs .= qq{
-            <div class="font-semibold mt-2">{$resource_name_singular.$field}</div>
+            <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div>
         };
 
         }
