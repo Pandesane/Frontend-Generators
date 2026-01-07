@@ -312,7 +312,7 @@ sub gen_slug_edit_page_svelte {
     $vars = $has_file == 1
       ? qq{
       // Defaults
-      let { form }: PageProps = \$props();
+      let { form , data}: PageProps = \$props();
       let formValidation: FormValidation | undefined | null = \$state();
       let jsonState = \$state("");
 
@@ -364,7 +364,7 @@ sub gen_slug_edit_page_svelte {
 sub get_edit_input {
     my ( $field_name, $field_type ) = @_;
     print "Sub input $field_type \n";
-    if ( $field_type =~ "text" ) {
+    if ( $field_type eq "text" ) {
         print "Creating text input.... \n";
         $input = qq{
           <div class="my-4 flex flex-col">
@@ -378,7 +378,7 @@ sub get_edit_input {
         };
         return $input;
     }
-    elsif ( $field_type =~ "textarea" ) {
+    elsif ( $field_type eq "textarea" ) {
         print "Creating textarea.... \n";
         $input = qq{
           <div class="my-4 flex flex-col">
@@ -395,7 +395,7 @@ sub get_edit_input {
         };
         return $input;
     }
-    elsif ( $field_type =~ "file" ) {
+    elsif ( $field_type eq "file" ) {
         print "Creating file input.... \n";
         $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
@@ -828,6 +828,7 @@ sub generate_form_data() {
           use:enhance
         >
         $form_title
+        <input type="hidden" name="validation" value={jsonState} />
         $gen_form
         $form_submit_button
         </form>
@@ -841,7 +842,7 @@ sub generate_form_data() {
 sub get_input() {
     my ( $field_name, $field_type ) = @_;
     print "Sub input $field_type \n";
-    if ( $field_type =~ "text" ) {
+    if ( $field_type eq "text" ) {
         print "Creating text input.... \n";
         $input = qq{
           <div class="my-4 flex flex-col">
@@ -855,7 +856,7 @@ sub get_input() {
         };
         return $input;
     }
-    elsif ( $field_type =~ "textarea" ) {
+    elsif ( $field_type eq "textarea" ) {
         print "Creating textarea.... \n";
         $input = qq{
           <div class="my-4 flex flex-col">
@@ -872,7 +873,7 @@ sub get_input() {
         };
         return $input;
     }
-    elsif ( $field_type =~ "file" ) {
+    elsif ( $field_type eq "file" ) {
         print "Creating file input.... \n";
         $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
