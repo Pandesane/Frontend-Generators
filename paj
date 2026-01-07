@@ -1,0 +1,245 @@
+#!/usr/bin/perl
+
+# paj gen.api context apimodule  struct_fields[description:textarea file:file]
+# paj gen.api product name:text description:textarea file:file
+
+# Run formatter for all files in the project
+
+$resource_type    = $ARGV[0];
+$context          = $ARGV[1];
+$api_module       = $ARGV[2];
+$api_module_lc    = lc($api_module);
+@fields           = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
+$module_file_name = lc($api_module);
+
+print "$resource_type $context $api_module @fields \n";
+
+if( $resource_type eq "help" || $resource_type eq "-h" || $resource_type eq "--help"){
+  $help = qq{
+    ## Phoenix Elixir API generator aka paj
+
+    # Syntax
+    paj gen.api context module [fields ...]
+
+    Example:
+    ``` $ paj gen.api ShopContext Product name description ```
+
+    context -> ShopContext
+    module -> Product
+    fields -> [name, description]
+
+    ## PAJ (paj) Help
+    # Run command
+    ``` $ paj (help | --help | -h)```
+
+
+  };
+
+  print $help
+
+  exit
+}
+
+if ( $resource_type eq "gen.api" ) {
+    $base_path = "lib/vendor_web/controllers/api";
+    `mkdir -p "$base_path"`;
+
+    # # Make index files
+    #  API controller
+    $api_controller_file = "$base_path/$module_file_name.ex";
+    if ( !( -f "$api_controller_file" ) ) {
+        `touch "$api_controller_file"`;
+        gen_api_controller("$api_controller_file");
+
+    }
+    else {
+        print "File Already exists \n";
+    }
+
+    $api_json_file = "$base_path/${module_file_name}_json.ex";
+    if ( !( -f "$api_json_file" ) ) {
+
+        # API json
+        `touch "$api_json_file"`;
+        gen_api_json("$api_json_file");
+
+    }
+    else {
+        print "File Already exists\n";
+    }
+
+}
+
+sub gen_api_json {
+    my ($file_name) = @_;
+    $imports = qq{
+     alias Vendor.$context.{$api_module}
+  };
+
+    $defs = qq{
+      def index(%{${api_module_lc}s: ${api_module_lc}s}) do
+        %{data: for(${api_module_lc} <- ${api_module_lc}s, do: data(${api_module_lc}))}
+      end
+
+      def create(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+      end
+
+      def update(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+      end
+
+      def show(%{${api_module_lc}: ${api_module_lc}}) do
+        # dbg(assigns)
+        %{data: data(${api_module_lc})}
+      end
+
+      def delete(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+      end
+  };
+
+    $gen_fields = "";
+
+    foreach $field (@fields) {
+        $gen_fields .= qq{
+        $field: ${api_module_lc}.$field,
+      };
+    }
+
+    $def_data = qq{
+      def data(%${api_module}{} = $api_module_lc) do
+          %{
+          # Defaults
+            id:  ${api_module_lc}.id,
+            created_at:  ${api_module_lc}.inserted_at,
+            updated_at: ${api_module_lc}.updated_at,
+            $gen_fields
+          }
+        |> dbg
+      end
+
+      #  defp get_url("./" <> path) do
+      #     "http://localhost:5000/" <> path
+      #   end
+
+      #   defp get_url(_) do
+      #     nil
+      #   end
+    };
+
+    $module = qq{
+      defmodule VendorWeb.Api.${api_module}JSON do
+          $imports
+          $defs
+          $def_data
+      end
+    };
+
+    push_data_to_file( $file_name, $module );
+
+}
+
+sub gen_api_controller {
+    my ($file_name) = @_;
+    $imports = qq{
+      use VendorWeb, :controller
+      alias Vendor.$context
+      alias VendorProcesses.File.FileUploadSupervisor
+  };
+
+    $index = qq{
+    def index(conn, _params) do
+      ${api_module_lc}s = $context.list_${api_module_lc}s()
+
+      conn
+      |> assign(:${api_module_lc}s, ${api_module_lc}s)
+      |> render(:index)
+    end
+    };
+
+    $show = qq{
+      def show(conn, %{"id" => id}) do
+          ${api_module_lc} = $context.get_${api_module_lc}!(id)
+          dbg(${api_module_lc})
+
+          conn
+          |> assign(:${api_module_lc}, ${api_module_lc})
+          |> render(:show)
+        end
+    };
+
+    $create = qq{
+        def create(conn, %{"uuid" => uuid} = params) do
+            {file_path, _mime_type} = FileUploadSupervisor.get_uploaded_file_path(uuid)
+            dbg(file_path)
+
+            # E.g. Map.put(params, "poster_image_path", file_path)
+
+            Map.put(params, file_field, file_path)
+            |> $context.create_${api_module_lc}()
+            |> dbg()
+
+            render(conn, :create)
+          end
+    };
+
+    $update = qq{
+        def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
+          dbg(attrs)
+          ${api_module_lc} = $context.get_${api_module_lc}!(id)
+
+          case FileUploadSupervisor.get_uploaded_file_path(uuid) do
+            nil ->
+              ${api_module_lc}
+              |> $context.update_${api_module_lc}(attrs)
+              |> dbg()
+
+            {file_path, _mime_type} ->
+              ${api_module_lc}
+              |> $context.update_${api_module_lc}(Map.put(attrs, file_field, file_path))
+              |> dbg()
+          end
+
+          render(conn, :update)
+        end
+    };
+
+    $delete = qq{
+      def delete(conn, %{"id" => id} = params) do
+        dbg(params)
+        ${api_module_lc} = $context.get_${api_module_lc}!(id)
+
+        ${api_module_lc}
+        |> $context.delete_${api_module_lc}()
+
+        # |> dbg()
+
+        render(conn, :delete)
+      end
+    };
+
+    $module = qq{
+      defmodule VendorWeb.Api.$api_module do
+            $imports
+            $index
+            $show
+            $create
+            $update
+            $delete
+
+      end
+    };
+
+    push_data_to_file( $file_name, $module );
+
+}
+
+sub push_data_to_file() {
+    my ( $filename, $data ) = @_;
+    open my $fh, ">", $filename or die "Cannot open file $filename";
+    print $fh "$data \n";
+}

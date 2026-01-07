@@ -36,3 +36,21 @@ name:text -> field_type = name and input_type = text
 
 ``` $ svelte (help | -h | --help) ```
 Outputs help information
+
+
+## Phoenix Elixir API generator aka paj
+
+# Syntax
+ paj gen.api context module [fields ...]
+
+Example:
+``` $ paj gen.api ShopContext Product name description ```
+
+context -> ShopContext
+module -> Product
+fields -> [name, description]
+
+## PAJ (paj) Help
+# Run command
+``` $ paj (help | --help | -h)```
+
