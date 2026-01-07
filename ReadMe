@@ -18,9 +18,11 @@ Uses api endpoints to publish data to server
 ## Only Supported input types are: text, textarea and file implemented as custom svelte component
 
 ## Help
+``` $ svelte gen.resource[:layout] resource [(field_type):(input_type) ...] ```
 
-``` $ svelte gen.resource shops name:text description:textarea file:file ```
+``` $ svelte gen.resource:app_layout shops name:text description:textarea file:file ```
 
+layout -> app_layout Note: Can only allow one parent layout
 resource -> shops
 fields -> name:text description:textarea file:file
 

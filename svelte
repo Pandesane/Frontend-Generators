@@ -17,20 +17,38 @@ $resource_name_singular_import = ucfirst($resource_name_singular);
 
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
     $help = qq{
-    Make sure to add this file dir to ur environment path
-    Help
+      ``` $ svelte gen.resource[:layout] resource [(field_type):(input_type) ...] ```
 
-    ``` \$ svelte gen.resource shops name:text description:textarea file:file ```
+      ``` $ svelte gen.resource:app_layout shops name:text description:textarea file:file ```
 
-    resource -> shops
-    fields -> name:text description:textarea file:file
+      layout -> app_layout Note: Can only allow one parent layout
+      resource -> shops
+      fields -> name:text description:textarea file:file
+
+      Fields
+      (field_type):(input_type)
+      e.g. From above
+      name:text -> field_type = name and input_type = text
+
+
+
+
+      ``` $ svelte (help | -h | --help) ```
+      Outputs help information
 
   };
 
     print $help;
 }
 elsif ( $type =~ "gen.resource" ) {
+
+    my ( $_ignore, $layout ) = split( ":", $type );
+    print("Got layout of file: $layout \n");
     $routes_base_path = "src/routes/$type_name";
+
+    if ($layout) {
+        $routes_base_path = "src/routes/($layout)/$type_name";
+    }
     if ( -d $routes_base_path ) {
         print "Resource already created. \n";
         exit("Resource already created.");
@@ -38,10 +56,11 @@ elsif ( $type =~ "gen.resource" ) {
     print "Generating resource: $resource_name \n";
 
     # Make resource directories
-    `mkdir -p $routes_base_path`;
-    `mkdir -p $routes_base_path/new`;
-    `mkdir -p $routes_base_path/[slug]`;
-    `mkdir -p $routes_base_path/[slug]/edit`;
+    # system("mkdir " ,"$routes_base_path" );
+    `mkdir -p "$routes_base_path"`;
+    `mkdir -p "$routes_base_path/new"`;
+    `mkdir -p "$routes_base_path/[slug]"`;
+    `mkdir -p "$routes_base_path/[slug]/edit"`;
 
     $lib_base_path = "src/lib/";
     `mkdir -p $lib_base_path`;
@@ -49,59 +68,59 @@ elsif ( $type =~ "gen.resource" ) {
     `mkdir -p $lib_base_path/schemas/`;
     `mkdir -p $lib_base_path/interfaces/`;
 
-    # Make index files
+    # # Make index files
     $index_path = $routes_base_path;
-    `touch $index_path/+page.svelte`;
+    `touch "$index_path/+page.svelte"`;
     gen_index_page_svelte("$index_path/+page.svelte");
-    `touch $index_path/+page.server.ts`;
+    `touch "$index_path/+page.server.ts"`;
     gen_index_page_ts("$index_path/+page.server.ts");
 
     # Make new files
     $new_path = "$routes_base_path/new";
-    `touch $new_path/+page.svelte`;
+    `touch "$new_path/+page.svelte"`;
     $form_title        = "Create New $resource_name_singular";
     $form_submit_label = "Create";
     $form_action       = "?/create";
     gen_new_page_svelte("$new_path/+page.svelte");
-    `touch $new_path/+page.server.ts`;
+    `touch "$new_path/+page.server.ts"`;
     gen_new_page_server("$new_path/+page.server.ts");
 
     # Make slug layout file
     $slug_path = "$routes_base_path/[slug]";
-    `touch $slug_path/layout.server.ts`;
+    `touch "$slug_path/layout.server.ts"`;
     gen_slug_layout_server_ts("$slug_path/layout.server.ts");
 
     # Make show files
-    `touch $slug_path/+page.svelte`;
+    `touch "$slug_path/+page.svelte"`;
     gen_slug_page_svelte("$slug_path/+page.svelte");
-    `touch $slug_path/+page.server.ts`;
+    `touch "$slug_path/+page.server.ts"`;
     gen_slug_page_ts("$slug_path/+page.server.ts");
 
     # Make edit files
     $edit_path = "$routes_base_path/[slug]/edit";
-    `touch $edit_path/+page.svelte`;
+    `touch "$edit_path/+page.svelte"`;
     $form_title        = "Edit $resource_name_singular";
     $form_submit_label = "Save";
     $form_action       = "?/update";
     gen_slug_edit_page_svelte("$edit_path/+page.svelte");
-    `touch $edit_path/+page.server.ts`;
+    `touch "$edit_path/+page.server.ts"`;
     gen_slug_edit_page_ts("$edit_path/+page.server.ts");
 
     # Resource schema
     $schema_path =
       "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
-    `touch $schema_path`;
+    `touch "$schema_path"`;
     gen_resource_schema("$schema_path");
 
     # Resource API
     $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
-    `touch $api_path`;
+    `touch "$api_path"`;
     gen_resource_api("$api_path");
 
     # Resource interface
     $interface_path =
       "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
-    `touch $interface_path`;
+    `touch "$interface_path"`;
     gen_resource_interface("$interface_path");
 
     # TODO: Run prettier formatter
@@ -621,8 +640,9 @@ sub gen_new_page_server {
     my ($file_name) = @_;
     $resource_api_normalize = lc($type_name);
     $resource_api_url       = "/${resource_api_normalize}/";
+
     # $resource_api           = ucfirst($resource_api_normalize);
-    $imports                = qq{
+    $imports = qq{
       import { fail, redirect, type Actions } from "\@sveltejs/kit";
       import type { FormValidation } from "\$lib/interfaces/types";
       import Validator from "\$lib/api/Validator";
