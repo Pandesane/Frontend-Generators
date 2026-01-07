@@ -1,0 +1,27 @@
+
+## SvelteKit Resource Generator
+
+This is a sveltekit generator for scaffolding resources
+
+Built using perl
+
+## Requirements
+
+Must have a svelte kit project
+Uses zod for validation
+Uses api endpoints to publish data to server
+
+## Not yet for production but you can edit to your project needs
+
+## Make sure to add this file dir to ur environment path
+
+## Help
+
+``` $ svelte gen.resource shops name:text description:textarea file:file ```
+
+resource -> shops
+fields -> name:text description:textarea file:file
+
+
+``` $ svelte (help | -h | --help) ```
+Outputs help information
