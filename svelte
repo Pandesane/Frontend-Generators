@@ -87,8 +87,8 @@ elsif ( $type =~ "gen.resource" ) {
 
     # Make slug layout file
     $slug_path = "$routes_base_path/[slug]";
-    `touch "$slug_path/layout.server.ts"`;
-    gen_slug_layout_server_ts("$slug_path/layout.server.ts");
+    `touch "$slug_path/+layout.server.ts"`;
+    gen_slug_layout_server_ts("$slug_path/+layout.server.ts");
 
     # Make show files
     `touch "$slug_path/+page.svelte"`;
