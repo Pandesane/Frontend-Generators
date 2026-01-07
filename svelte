@@ -647,7 +647,6 @@ sub gen_new_page_server {
       import type { FormValidation } from "\$lib/interfaces/types";
       import Validator from "\$lib/api/Validator";
       import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
-      import UserAuthenticationChannel from "\$lib/sockets/channels/UserAuthentication";
   };
 
     $actions = qq{
@@ -666,7 +665,7 @@ sub gen_new_page_server {
       console.log(mapData)
       // let json = JSON.stringify(mapData)
       // TODO: Add authorization for ${resource_name_import} creation
-      mapData = { ...mapData, user_id: UserAuthenticationChannel.currentUser() }
+      mapData = { ...mapData }
       validation = await ${resource_name_import}API.create(mapData, validation)
 
       if (!validation.success) {
