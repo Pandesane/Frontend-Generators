@@ -531,7 +531,7 @@ sub gen_slug_page_svelte {
       $script
       <TopNavBar to="/$resource_name" title={data.$resource_name_singular.name} />
 
-      <div class="mt-14 mx-2">
+      <div class="mt-18 mx-2">
         <div>
           $gen_divs
         </div>
@@ -636,7 +636,12 @@ sub gen_index_page_svelte {
 
     $resource_template = qq{
     <div class="mx-4">
+
+
+      <div class="flex justify-between items-baseline-last">
       <p class="my-4">${resource_name} Listing</p>
+        <a href="/${resource_name}/new" class="btn btn-link">add</a>
+      </div>
 
       {#each data.${resource_name} as ${resource_name_singular}}
         <a href="/$resource_name/{${resource_name_singular}.id}">
