@@ -62,7 +62,7 @@ elsif ( $type =~ "gen.resource" ) {
     $form_title        = "Create New $resource_name_singular";
     $form_submit_label = "Create";
     $form_action       = "?/create";
-    gen_page_svelte("$new_path/+page.svelte");
+    gen_new_page_svelte("$new_path/+page.svelte");
     `touch $new_path/+page.server.ts`;
     gen_new_page_server("$new_path/+page.server.ts");
 
@@ -94,13 +94,13 @@ elsif ( $type =~ "gen.resource" ) {
     gen_resource_schema("$schema_path");
 
     # Resource API
-    $api_path = "$lib_base_path/api/${resource_name_singular_import}API.ts";
+    $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
     `touch $api_path`;
     gen_resource_api("$api_path");
 
     # Resource interface
     $interface_path =
-      "$lib_base_path/interfaces/i${resource_name_singular_import}.ts";
+      "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
     `touch $interface_path`;
     gen_resource_interface("$interface_path");
 
@@ -138,7 +138,7 @@ sub gen_resource_api {
       import { ${resource_name_singular_import}SchemaMap } from "\$lib/schemas/${resource_name_singular_import}Schema"
       import API from "./API"
 
-      class ${resource_name_singular_import}Api extends API {
+      class ${resource_name_import}Api extends API {
 
         constructor() {
           super(${resource_name_singular_import}SchemaMap, "http://localhost:5000/api/$resource_name")
@@ -151,9 +151,9 @@ sub gen_resource_api {
 
 
       }
-      const ${resource_name_singular_import}API = new ${resource_name_singular_import}Api()
+      const ${resource_name_import}API = new ${resource_name_import}Api()
 
-      export default ${resource_name_singular_import}API
+      export default ${resource_name_import}API
   };
 
     push_data_to_file( $file_name, $template );
@@ -556,13 +556,13 @@ sub gen_index_page_ts {
 
     $imports = qq{
       import type { PageServerLoad } from './\$types';
-      import ${resource_name_import}API from '\$lib/api/${resource_name_import}API';
+      import ${resource_name_singular_import}API from '\$lib/api/${resource_name_singular_import}API';
 
     };
 
     $load = qq{
       export const load: PageServerLoad = async ({ }) => {
-        let $resource_name = await ${resource_name_import}API.list()
+        let $resource_name = await ${resource_name_singular_import}API.list()
         console.log($resource_name)
         return { $resource_name: $resource_name };
       }
@@ -602,7 +602,7 @@ sub gen_index_page_svelte {
       {#each data.${resource_name} as ${resource_name_singular}}
         <a href="/$resource_name/{${resource_name_singular}.id}">
         $gen_divs
-        <a/>
+        </a>
       {/each}
 
     </div>
@@ -621,12 +621,12 @@ sub gen_new_page_server {
     my ($file_name) = @_;
     $resource_api_normalize = lc($type_name);
     $resource_api_url       = "/${resource_api_normalize}/";
-    $resource_api           = ucfirst($resource_api_normalize);
+    # $resource_api           = ucfirst($resource_api_normalize);
     $imports                = qq{
       import { fail, redirect, type Actions } from "\@sveltejs/kit";
       import type { FormValidation } from "\$lib/interfaces/types";
       import Validator from "\$lib/api/Validator";
-      import ${resource_api}API from "\$lib/api/${resource_api}API";
+      import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
       import UserAuthenticationChannel from "\$lib/sockets/channels/UserAuthentication";
   };
 
@@ -647,7 +647,7 @@ sub gen_new_page_server {
       // let json = JSON.stringify(mapData)
       // TODO: Add authorization for ${resource_name_import} creation
       mapData = { ...mapData, user_id: UserAuthenticationChannel.currentUser() }
-      validation = await ${resource_api}API.create(mapData, validation)
+      validation = await ${resource_name_import}API.create(mapData, validation)
 
       if (!validation.success) {
         return fail(400, validation)
@@ -668,16 +668,17 @@ sub gen_new_page_server {
 
 }
 
-sub gen_page_svelte {
+sub gen_new_page_svelte {
     my ($file_name) = @_;
 
     # Data here
-    $imports = q{
-  import { enhance } from "$app/forms";
-  import type { PageProps } from "./$types";
-  import Validator from "$lib/api/Validator";
-  import FileInputUploader from "$lib/components/FileInputUploader.svelte";
-  import type { FormValidation } from "$lib/interfaces/types";
+    $imports = qq{
+  import { enhance } from "\$app/forms";
+  import type { PageProps } from "./\$types";
+  import Validator from "\$lib/api/Validator";
+  import FileInputUploader from "\$lib/components/FileInputUploader.svelte";
+  import type { FormValidation } from "\$lib/interfaces/types";
+  import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
   };
 
     $has_file = 0;
