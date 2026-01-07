@@ -525,7 +525,7 @@ sub gen_slug_page_svelte {
       </script>
     };
 
-    $gen_divs = generate_divs();
+    $gen_divs = generate_divs(1);
 
     $template = qq{
       $script
@@ -555,17 +555,34 @@ sub gen_slug_page_svelte {
 
 sub generate_divs {
     $gen_divs = "";
+    my ($prefix_data) = @_;
     foreach $i (@fields) {
         my ( $field, $field_type ) = split( ":", $i );
         if ( $field_type eq "file" ) {
-            $gen_divs .= qq{
-            <!-- <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div> -->
-        };
+            if ($prefix_data) {
+                $gen_divs .= qq{
+                   <!-- <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div> -->
+                };
+
+            }
+            else {
+                $gen_divs .= qq{
+                  <!-- <div class="font-semibold mt-2">{$resource_name_singular.$field}</div> -->
+                };
+            }
         }
         else {
-            $gen_divs .= qq{
-            <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div>
-        };
+            if ($prefix_data) {
+                $gen_divs .= qq{
+                <div class="font-semibold mt-2">{data.$resource_name_singular.$field}</div>
+            };
+
+            }
+            else {
+                $gen_divs .= qq{
+                <div class="font-semibold mt-2">{$resource_name_singular.$field}</div>
+              };
+            }
 
         }
     }
