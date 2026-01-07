@@ -15,12 +15,21 @@ Uses api endpoints to publish data to server
 
 ## Make sure to add this file dir to ur environment path
 
+## Only Supported input types are: text, textarea and file implemented as custom svelte component
+
 ## Help
 
 ``` $ svelte gen.resource shops name:text description:textarea file:file ```
 
 resource -> shops
 fields -> name:text description:textarea file:file
+
+Fields
+(field_type):(input_type)
+e.g. From above
+name:text -> field_type = name and input_type = text
+
+
 
 
 ``` $ svelte (help | -h | --help) ```
