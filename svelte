@@ -144,7 +144,7 @@ elsif ( $type =~ "gen.resource" ) {
     }
 
     # Resource API
-    $api_path = "$lib_base_path/api/${resource_name_singular_import}API.ts";
+    $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
     if ( !( -f "$api_path" ) ) {
         `touch "$api_path"`;
         gen_resource_api("$api_path");
@@ -638,13 +638,13 @@ sub gen_index_page_ts {
 
     $imports = qq{
       import type { PageServerLoad } from './\$types';
-      import ${resource_name_singular_import}API from '\$lib/api/${resource_name_singular_import}API';
+      import ${resource_name_import}API from '\$lib/api/${resource_name_import}API';
 
     };
 
     $load = qq{
       export const load: PageServerLoad = async ({ }) => {
-        let $resource_name = await ${resource_name_singular_import}API.list()
+        let $resource_name = await ${resource_name_import}API.list()
         console.log($resource_name)
         return { $resource_name: $resource_name };
       }
