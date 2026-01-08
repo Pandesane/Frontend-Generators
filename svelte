@@ -16,19 +16,16 @@ $resource_name_singular =
 $resource_name_import          = ucfirst($resource_name);
 $resource_name_singular_import = ucfirst($resource_name_singular);
 
-
-if($type_name =~ /(\b.*):(\b.*)/){
-  print( "True $type_name $1  :   $2\n" );
-  $resource_name = $1;
-  $resource_name_singular =
-  substr( $resource_name, 0, length($resource_name) - 1 );
-  $resource_name_import          = ucfirst($resource_name);
-  $resource_name_singular_import = ucfirst($resource_name_singular);
+if ( $type_name =~ /(\b.*):(\b.*)/ ) {
+    print("True $type_name $1  :   $2\n");
+    $resource_name = $1;
+    $resource_name_singular =
+      substr( $resource_name, 0, length($resource_name) - 1 );
+    $resource_name_import          = ucfirst($resource_name);
+    $resource_name_singular_import = ucfirst($resource_name_singular);
 }
 
 print("Resource Name: $resource_name \n");
-
-
 
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
     $help = q{
@@ -137,19 +134,37 @@ elsif ( $type =~ "gen.resource" ) {
     # Resource schema
     $schema_path =
       "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
-    `touch "$schema_path"`;
-    gen_resource_schema("$schema_path");
+    if ( !( -f "$schema_path" ) ) {
+        `touch "$schema_path"`;
+        gen_resource_schema("$schema_path");
+
+    }
+    else {
+        print "File Already exists \n";
+    }
 
     # Resource API
-    $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
-    `touch "$api_path"`;
-    gen_resource_api("$api_path");
+    $api_path = "$lib_base_path/api/${resource_name_singular_import}API.ts";
+    if ( !( -f "$api_path" ) ) {
+        `touch "$api_path"`;
+        gen_resource_api("$api_path");
+
+    }
+    else {
+        print "File Already exists \n";
+    }
 
     # Resource interface
     $interface_path =
       "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
-    `touch "$interface_path"`;
-    gen_resource_interface("$interface_path");
+    if ( !( -f "$interface_path" ) ) {
+        `touch "$interface_path"`;
+        gen_resource_interface("$interface_path");
+
+    }
+    else {
+        print "File Already exists \n";
+    }
 
     # TODO: Run prettier formatter
 }
@@ -691,7 +706,7 @@ sub gen_index_page_svelte {
 
 sub gen_new_page_server {
     my ($file_name) = @_;
-    $resource_api_url       = "/${resource_name}/";
+    $resource_api_url = "/${resource_name}/";
 
     $imports = qq{
       import { fail, redirect, type Actions } from "\@sveltejs/kit";
