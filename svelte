@@ -25,6 +25,15 @@ if ( $type_name =~ /(\b.*):(\b.*)/ ) {
     $resource_name_singular_import = ucfirst($resource_name_singular);
 }
 
+# E.g categories
+if ( $type_name =~ /(\b.*)ies/ ) {
+    print("True $type_name $1  :   $2\n");
+    # $resource_name = $1;
+    $resource_name_singular = "${1}y";
+    $resource_name_import          = ucfirst($resource_name);
+    $resource_name_singular_import = ucfirst($resource_name_singular);
+}
+
 print("Resource Name: $resource_name \n");
 
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {

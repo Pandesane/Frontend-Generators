@@ -7,26 +7,42 @@
 
 # Run formatter for all files in the project
 
-$resource_type    = $ARGV[0];
-$context          = $ARGV[1];
-@fields           = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
-# Variable
-$api_module       = $ARGV[2];
-$api_module_lc    = lc($api_module);
-$module_file_name = lc($api_module);
+$resource_type = $ARGV[0];
+$context       = $ARGV[1];
+@fields        = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
 
-if($api_module =~ /(\b.*):(\b.*)/){
-  print( "True $api_module $1  :   $2\n" );
-  $api_module = $1;
-  $api_module_lc = $2;
-  $module_file_name = $2;
+# Variable
+$api_module             = $ARGV[2];
+# $api_module_lc          = lc($api_module);
+$module_file_name       = lc($api_module);
+$api_module_lc_plural   = lc($api_module);    # s is added dynamically
+$api_module_lc_singular = lc($api_module);
+
+if ( $api_module =~ /(\b.*):(\b.*)/ ) {
+    print("True $api_module $1  :   $2\n");
+    $api_module       = $1;
+    $api_module_lc    = $2;
+    $module_file_name = $2;
+
+}
+
+if ( $api_module =~ /(\b.*)y/ ) {
+    print("True $api_module $1  :   $2\n");
+
+    # $api_module = $1;
+    $api_module_lc_plural   = lcfirst("${1}ies");    # s is added dynamically
+    $api_module_lc_singular = lcfirst("${1}y");      # s is added dynamically
+    $module_file_name       = lcfirst("${1}ies");
 
 }
 
 # print "$resource_type $context $api_module @fields \n";
 
-if( $resource_type eq "help" or $resource_type eq "-h" or $resource_type eq "--help"){
-  $help = qq{
+if (   $resource_type eq "help"
+    or $resource_type eq "-h"
+    or $resource_type eq "--help" )
+{
+    $help = qq{
     ## Phoenix Elixir API generator aka paj
 
     # Syntax
@@ -58,7 +74,7 @@ if( $resource_type eq "help" or $resource_type eq "-h" or $resource_type eq "--h
 
   };
 
-  print $help
+    print $help;
 }
 elsif ( $resource_type eq "gen.api" ) {
     $base_path = "lib/vendor_web/controllers/api";
@@ -97,8 +113,8 @@ sub gen_api_json {
   };
 
     $defs = qq{
-      def index(%{${api_module_lc}s: ${api_module_lc}s}) do
-        %{data: for(${api_module_lc} <- ${api_module_lc}s, do: data(${api_module_lc}))}
+      def index(%{${api_module_lc_plural}: ${api_module_lc_plural}}) do
+        %{data: for(${api_module_lc_singular} <- ${api_module_lc_plural}, do: data(${api_module_lc_singular}))}
       end
 
       def create(_assigns) do
@@ -111,9 +127,9 @@ sub gen_api_json {
         %{response: "success"}
       end
 
-      def show(%{${api_module_lc}: ${api_module_lc}}) do
+      def show(%{${api_module_lc_singular}: ${api_module_lc_singular}}) do
         # dbg(assigns)
-        %{data: data(${api_module_lc})}
+        %{data: data(${api_module_lc_singular})}
       end
 
       def delete(_assigns) do
@@ -126,17 +142,17 @@ sub gen_api_json {
 
     foreach $field (@fields) {
         $gen_fields .= qq{
-        $field: ${api_module_lc}.$field,
+        $field: ${api_module_lc_singular}.$field,
       };
     }
 
     $def_data = qq{
-      def data(%${api_module}{} = $api_module_lc) do
+      def data(%${api_module}{} = $api_module_lc_singular) do
           %{
           # Defaults
-            id:  ${api_module_lc}.id,
-            created_at:  ${api_module_lc}.inserted_at,
-            updated_at: ${api_module_lc}.updated_at,
+            id:  ${api_module_lc_singular}.id,
+            created_at:  ${api_module_lc_singular}.inserted_at,
+            updated_at: ${api_module_lc_singular}.updated_at,
             $gen_fields
           }
         |> dbg
@@ -173,21 +189,21 @@ sub gen_api_controller {
 
     $index = qq{
     def index(conn, _params) do
-      ${api_module_lc}s = $context.list_${api_module_lc}s()
+      ${api_module_lc_plural} = $context.list_${api_module_lc_plural}()
 
       conn
-      |> assign(:${api_module_lc}s, ${api_module_lc}s)
+      |> assign(:${api_module_lc_plural}, ${api_module_lc_plural})
       |> render(:index)
     end
     };
 
     $show = qq{
       def show(conn, %{"id" => id}) do
-          ${api_module_lc} = $context.get_${api_module_lc}!(id)
-          dbg(${api_module_lc})
+          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
+          dbg(${api_module_lc_singular})
 
           conn
-          |> assign(:${api_module_lc}, ${api_module_lc})
+          |> assign(:${api_module_lc_singular}, ${api_module_lc_singular})
           |> render(:show)
         end
     };
@@ -200,7 +216,7 @@ sub gen_api_controller {
             # E.g. Map.put(params, "poster_image_path", file_path)
 
             Map.put(params, file_field, file_path)
-            |> $context.create_${api_module_lc}()
+            |> $context.create_${api_module_lc_singular}()
             |> dbg()
 
             render(conn, :create)
@@ -210,17 +226,17 @@ sub gen_api_controller {
     $update = qq{
         def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
           dbg(attrs)
-          ${api_module_lc} = $context.get_${api_module_lc}!(id)
+          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
 
           case FileUploadSupervisor.get_uploaded_file_path(uuid) do
             nil ->
-              ${api_module_lc}
-              |> $context.update_${api_module_lc}(attrs)
+              ${api_module_lc_singular}
+              |> $context.update_${api_module_lc_singular}(attrs)
               |> dbg()
 
             {file_path, _mime_type} ->
-              ${api_module_lc}
-              |> $context.update_${api_module_lc}(Map.put(attrs, file_field, file_path))
+              ${api_module_lc_singular}
+              |> $context.update_${api_module_lc_singular}(Map.put(attrs, file_field, file_path))
               |> dbg()
           end
 
@@ -231,10 +247,10 @@ sub gen_api_controller {
     $delete = qq{
       def delete(conn, %{"id" => id} = params) do
         dbg(params)
-        ${api_module_lc} = $context.get_${api_module_lc}!(id)
+        ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
 
-        ${api_module_lc}
-        |> $context.delete_${api_module_lc}()
+        ${api_module_lc_singular}
+        |> $context.delete_${api_module_lc_singular}()
 
         # |> dbg()
 
