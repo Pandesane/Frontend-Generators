@@ -52,7 +52,8 @@ Outputs help information
 ## Phoenix Elixir API generator aka paj
 
 # Syntax
- paj gen.api context module [fields ...]
+ paj gen.api:[has_file] context module [fields ...]
+ has_file -> boolean field generates files with acceptance of a file uploaded to the server
 
 
 Example:
@@ -64,7 +65,7 @@ fields -> [name, description]
 
 
  OR:
- paj gen.api context module:module_file_name [fields ...]
+ paj gen.api:[has_file] context module:module_file_name [fields ...]
 
 Example:
 ``` paj gen.api ShopContext ProductAd:product_ad name:text description:textarea file:file```

@@ -12,16 +12,19 @@ $context       = $ARGV[1];
 @fields        = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
 
 # Variable
-$api_module             = $ARGV[2];
+$api_module = $ARGV[2];
+
 # $api_module_lc          = lc($api_module);
 $module_file_name       = lc($api_module);
 $api_module_lc_plural   = lc($api_module);    # s is added dynamically
 $api_module_lc_singular = lc($api_module);
 
+# Default don`t include uploaded file receiving
+$has_file = 0;
+
 if ( $api_module =~ /(\b.*):(\b.*)/ ) {
     print("True $api_module $1  :   $2\n");
     $api_module       = $1;
-    $api_module_lc    = $2;
     $module_file_name = $2;
 
 }
@@ -43,40 +46,51 @@ if (   $resource_type eq "help"
     or $resource_type eq "--help" )
 {
     $help = qq{
-    ## Phoenix Elixir API generator aka paj
+        ## Phoenix Elixir API generator aka paj
 
-    # Syntax
-    paj gen.api context module [fields ...]
-
-    Example:
-    ``` $ paj gen.api ShopContext Product name description ```
-
-    context -> ShopContext
-    module -> Product
-    fields -> [name, description]
-
-    OR:
-    paj gen.api context module:module_file_name [fields ...]
-
-    Example:
-    ``` paj gen.api ShopContext ProductAd:product_ad name:text description:textarea file:file```
-
-    context -> ShopContext
-    module -> ProductAd
-    module_file_name -> product_ad
-    fields -> [name, description]
+        # Syntax
+        paj gen.api:[has_file] context module [fields ...]
+        has_file -> boolean field generates files with acceptance of a file uploaded to the server
 
 
-    ## PAJ (paj) Help
-    # Run command
-    ``` $ paj (help | --help | -h)```
+        Example:
+        ``` $ paj gen.api ShopContext Product name description ```
+
+        context -> ShopContext
+        module -> Product
+        fields -> [name, description]
+
+
+        OR:
+        paj gen.api:[has_file] context module:module_file_name [fields ...]
+
+        Example:
+        ``` paj gen.api ShopContext ProductAd:product_ad name:text description:textarea file:file```
+
+        context -> ShopContext
+        module -> ProductAd
+        module_file_name -> product_ad
+        fields -> [name, description]
+
+
+        ## PAJ (paj) Help
+        # Run command
+        ``` $ paj (help | --help | -h)```
+
+
 
 
   };
 
     print $help;
 }
-elsif ( $resource_type eq "gen.api" ) {
+elsif ( $resource_type =~ "gen.api" ) {
+
+    if ( $resource_type eq "gen.api:has_file" ) {
+        $has_file = 1;
+        print "Detected has_file set to $has_file \n";
+    }
+
     $base_path = "lib/vendor_web/controllers/api";
     `mkdir -p "$base_path"`;
 
@@ -146,7 +160,7 @@ sub gen_api_json {
       };
     }
 
-    $def_data = qq{
+    $def_data = $has_file == 1 ? qq{
       def data(%${api_module}{} = $api_module_lc_singular) do
           %{
           # Defaults
@@ -165,6 +179,17 @@ sub gen_api_json {
       #   defp get_url(_) do
       #     nil
       #   end
+    }: qq{
+      def data(%${api_module}{} = $api_module_lc_singular) do
+          %{
+          # Defaults
+            id:  ${api_module_lc_singular}.id,
+            created_at:  ${api_module_lc_singular}.inserted_at,
+            updated_at: ${api_module_lc_singular}.updated_at,
+            $gen_fields
+          }
+        |> dbg
+      end
     };
 
     $module = qq{
@@ -181,10 +206,15 @@ sub gen_api_json {
 
 sub gen_api_controller {
     my ($file_name) = @_;
-    $imports = qq{
+    $imports = $has_file == 1
+      ? qq{
       use VendorWeb, :controller
       alias Vendor.$context
       alias VendorProcesses.File.FileUploadSupervisor
+  }
+      : qq{
+      use VendorWeb, :controller
+      alias Vendor.$context
   };
 
     $index = qq{
@@ -208,7 +238,8 @@ sub gen_api_controller {
         end
     };
 
-    $create = qq{
+    $create = $has_file == 1
+      ? qq{
         def create(conn, %{"uuid" => uuid} = params) do
             {file_path, _mime_type} = FileUploadSupervisor.get_uploaded_file_path(uuid)
             dbg(file_path)
@@ -221,9 +252,18 @@ sub gen_api_controller {
 
             render(conn, :create)
           end
+    }
+      : qq{
+        def create(conn, params) do
+            params
+            |> $context.create_${api_module_lc_singular}()
+            |> dbg()
+
+            render(conn, :create)
+          end
     };
 
-    $update = qq{
+    $update = $has_file == 1 ? qq{
         def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
           dbg(attrs)
           ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
@@ -242,6 +282,18 @@ sub gen_api_controller {
 
           render(conn, :update)
         end
+    } : qq{
+        def update(conn, %{"id" => id} = params) do
+
+          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
+
+          ${api_module_lc_singular}
+          |> $context.update_${api_module_lc_singular}(params)
+          |> dbg()
+
+
+          render(conn, :update)
+        end
     };
 
     $delete = qq{
@@ -251,8 +303,6 @@ sub gen_api_controller {
 
         ${api_module_lc_singular}
         |> $context.delete_${api_module_lc_singular}()
-
-        # |> dbg()
 
         render(conn, :delete)
       end
