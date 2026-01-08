@@ -1,20 +1,31 @@
 #!/usr/bin/perl
 
 # paj gen.api context apimodule  struct_fields[description:textarea file:file]
-# paj gen.api product name:text description:textarea file:file
+# paj gen.api ShopContext ProductAd name:text description:textarea file:file
+# paj gen.api context apimodule:apimodule_lc  struct_fields[description:textarea file:file]
+# paj gen.api ShopContext ProductAd:product_ad name:text description:textarea file:file
 
 # Run formatter for all files in the project
 
 $resource_type    = $ARGV[0];
 $context          = $ARGV[1];
+@fields           = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
+# Variable
 $api_module       = $ARGV[2];
 $api_module_lc    = lc($api_module);
-@fields           = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
 $module_file_name = lc($api_module);
 
-print "$resource_type $context $api_module @fields \n";
+if($api_module =~ /(\b.*):(\b.*)/){
+  print( "True $api_module $1  :   $2\n" );
+  $api_module = $1;
+  $api_module_lc = $2;
+  $module_file_name = $2;
 
-if( $resource_type eq "help" || $resource_type eq "-h" || $resource_type eq "--help"){
+}
+
+# print "$resource_type $context $api_module @fields \n";
+
+if( $resource_type eq "help" or $resource_type eq "-h" or $resource_type eq "--help"){
   $help = qq{
     ## Phoenix Elixir API generator aka paj
 
@@ -28,6 +39,18 @@ if( $resource_type eq "help" || $resource_type eq "-h" || $resource_type eq "--h
     module -> Product
     fields -> [name, description]
 
+    OR:
+    paj gen.api context module:module_file_name [fields ...]
+
+    Example:
+    ``` paj gen.api ShopContext ProductAd:product_ad name:text description:textarea file:file```
+
+    context -> ShopContext
+    module -> ProductAd
+    module_file_name -> product_ad
+    fields -> [name, description]
+
+
     ## PAJ (paj) Help
     # Run command
     ``` $ paj (help | --help | -h)```
@@ -36,11 +59,8 @@ if( $resource_type eq "help" || $resource_type eq "-h" || $resource_type eq "--h
   };
 
   print $help
-
-  exit
 }
-
-if ( $resource_type eq "gen.api" ) {
+elsif ( $resource_type eq "gen.api" ) {
     $base_path = "lib/vendor_web/controllers/api";
     `mkdir -p "$base_path"`;
 

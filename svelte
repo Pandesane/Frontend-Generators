@@ -9,32 +9,60 @@ $type_name = $ARGV[1];
 @fields    = @ARGV[ 2 .. ( scalar(@ARGV) - 1 ) ];
 
 # Resouce name ie products and product
+
 $resource_name = lc($type_name);
 $resource_name_singular =
   substr( $resource_name, 0, length($resource_name) - 1 );
 $resource_name_import          = ucfirst($resource_name);
 $resource_name_singular_import = ucfirst($resource_name_singular);
 
+
+if($type_name =~ /(\b.*):(\b.*)/){
+  print( "True $type_name $1  :   $2\n" );
+  $resource_name = $1;
+  $resource_name_singular =
+  substr( $resource_name, 0, length($resource_name) - 1 );
+  $resource_name_import          = ucfirst($resource_name);
+  $resource_name_singular_import = ucfirst($resource_name_singular);
+}
+
+print("Resource Name: $resource_name \n");
+
+
+
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
-    $help = qq{
-      ``` $ svelte gen.resource[:layout] resource [(field_type):(input_type) ...] ```
+    $help = q{
+      ## Help
 
-      ``` $ svelte gen.resource:app_layout shops name:text description:textarea file:file ```
+    ``` $ svelte gen.resource[:layout] resource [(field_type):(input_type) ...] ```
 
-      layout -> app_layout Note: Can only allow one parent layout
-      resource -> shops
-      fields -> name:text description:textarea file:file
+    ``` $ svelte gen.resource:app_layout shops name:text description:textarea file:file ```
 
-      Fields
-      (field_type):(input_type)
-      e.g. From above
-      name:text -> field_type = name and input_type = text
+    layout -> app_layout Note: Can only allow one parent layout
+    resource -> shops Note: Resource must end with an s
+    fields -> name:text description:textarea file:file
+
+    OR: with custom path name and file name
+    Note correct error with file_name not used its just generated from path_name
+
+    ``` $ svelte gen.resource[:layout] path_name:file_name [(field_type):(input_type) ...] ```
+
+    ``` $ svelte gen.resource:app_layout productAds:ProductAds name:text description:textarea file:file ```
+
+    layout -> app_layout Note: Can only allow one parent layout
+    path_name -> productAds Note: path_name must end with an s
+    file_name -> ProductAds Note: file_name must end with an s
+    fields -> name:text description:textarea file:file
+
+    Fields
+    (field_type):(input_type)
+    e.g. From above
+    name:text -> field_type = name and input_type = text
 
 
+    ``` $ svelte (help | -h | --help) ```
+    Outputs help information
 
-
-      ``` $ svelte (help | -h | --help) ```
-      Outputs help information
 
   };
 
@@ -44,10 +72,10 @@ elsif ( $type =~ "gen.resource" ) {
 
     my ( $_ignore, $layout ) = split( ":", $type );
     print("Got layout of file: $layout \n");
-    $routes_base_path = "src/routes/$type_name";
+    $routes_base_path = "src/routes/$resource_name";
 
     if ($layout) {
-        $routes_base_path = "src/routes/($layout)/$type_name";
+        $routes_base_path = "src/routes/($layout)/$resource_name";
     }
     if ( -d $routes_base_path ) {
         print "Resource already created. \n";
@@ -402,7 +430,7 @@ sub get_edit_input {
         print "Creating file input.... \n";
         $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
-            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="$type_name Poster" />
+            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="$resource_name Poster" />
 
         };
         return $input;
@@ -663,10 +691,8 @@ sub gen_index_page_svelte {
 
 sub gen_new_page_server {
     my ($file_name) = @_;
-    $resource_api_normalize = lc($type_name);
-    $resource_api_url       = "/${resource_api_normalize}/";
+    $resource_api_url       = "/${resource_name}/";
 
-    # $resource_api           = ucfirst($resource_api_normalize);
     $imports = qq{
       import { fail, redirect, type Actions } from "\@sveltejs/kit";
       import type { FormValidation } from "\$lib/interfaces/types";
@@ -901,7 +927,7 @@ sub get_input() {
         print "Creating file input.... \n";
         $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
-            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="$type_name Poster" />
+            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="$resource_name Poster" />
 
         };
         return $input;
