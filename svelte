@@ -52,13 +52,16 @@ if ( $type_name =~ /(\b.*)ies/ ) {
 
 print("Resource Name: $resource_name \n");
 
+# Default dirs for generated files
+my $routes_base_path = "gen/src/routes/$resource_name";
+my $lib_base_path    = "gen/src/lib/";
+
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
     Svelte::Help::gen_help();
 }
 elsif ( $type =~ "gen.resource" ) {
 
     my ( $_ignore, $layout ) = split( ":", $type );
-    my $routes_base_path = "gen/src/routes/$resource_name";
 
     if ($layout) {
         print("Got layout of file: $layout \n");
@@ -76,11 +79,10 @@ elsif ( $type =~ "gen.resource" ) {
     `mkdir -p "$routes_base_path/[slug]"`;
     `mkdir -p "$routes_base_path/[slug]/edit"`;
 
-    my $lib_base_path = "gen/src/lib/";
-    `mkdir -p $lib_base_path`;
-    `mkdir -p $lib_base_path/api/`;
-    `mkdir -p $lib_base_path/schemas/`;
-    `mkdir -p $lib_base_path/interfaces/`;
+    # `mkdir -p $lib_base_path`;
+    # `mkdir -p $lib_base_path/api/`;
+    # `mkdir -p $lib_base_path/schemas/`;
+    # `mkdir -p $lib_base_path/interfaces/`;
 
     # # Make index files
     my $index_path = $routes_base_path;
@@ -135,6 +137,73 @@ elsif ( $type =~ "gen.resource" ) {
     Svelte::Routes::Slug::Edit::gen_slug_edit_page_ts(
         "$edit_path/+page.server.ts", $resource_name_import, $resource_name );
 
+    # # Resource schema
+    # my $schema_path =
+    #   "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
+    # if ( !( -f "$schema_path" ) ) {
+    #     `touch "$schema_path"`;
+    #     Svelte::Schema::gen_resource_schema( "$schema_path",
+    #         $resource_name_singular_import,
+    #         $resource_name_import, $resource_name, @fields );
+
+    # }
+    # else {
+    #     print "File Already exists \n";
+    # }
+
+    # # Resource API
+    # my $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
+    # if ( !( -f "$api_path" ) ) {
+    #     `touch "$api_path"`;
+    #     Svelte::Api::gen_resource_api( "$api_path",
+    #         $resource_name_singular_import,
+    #         $resource_name_import, $resource_name );
+
+    # }
+    # else {
+    #     print "File Already exists \n";
+    # }
+
+    # # Resource interface
+    # my $interface_path =
+    #   "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
+    # if ( !( -f "$interface_path" ) ) {
+    #     `touch "$interface_path"`;
+    #     Svelte::Interface::gen_resource_interface( "$interface_path",
+    #         $resource_name_singular_import, @fields );
+
+    # }
+    # else {
+    #     print "File Already exists \n";
+    # }
+
+    gen_api_interface_schema()
+
+    # TODO: Run prettier formatter
+
+}
+elsif ( $type =~ "gen.api" ) {
+
+# DOCS
+# svelte gen.api resourcename_url:resource_name_plural_caps [fields...]
+# svelte gen.api liveShops:LiveShops  topic:text description:textarea active_watchers:text
+# resourcename_url and resource_name_capital must be in plural ie liveShops:LiveShops
+# svelte gen.api resourcename [fields...]
+# svelte gen.api carts user_id:text cart_product_id:text
+# resourcename must be in plural ie carts
+
+    print "Generating API \n";
+
+    gen_api_interface_schema();
+}
+
+sub gen_api_interface_schema {
+
+    `mkdir -p $lib_base_path`;
+    `mkdir -p $lib_base_path/api/`;
+    `mkdir -p $lib_base_path/schemas/`;
+    `mkdir -p $lib_base_path/interfaces/`;
+
     # Resource schema
     my $schema_path =
       "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
@@ -174,7 +243,5 @@ elsif ( $type =~ "gen.resource" ) {
     else {
         print "File Already exists \n";
     }
-
-    # TODO: Run prettier formatter
 
 }
