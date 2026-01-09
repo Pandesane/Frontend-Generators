@@ -43,6 +43,11 @@ Fields
 e.g. From above
 name:text -> field_type = name and input_type = text
 
+
+### Generate Resourceful components with gen.resource.component
+Has the same api as the rest of the controls
+
+
 # DOCS for Generation an api which contains the schema files, api files and interface files
 
 # svelte gen.api resourcename_url:resource_name_plural_caps [fields...]

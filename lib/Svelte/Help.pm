@@ -9,7 +9,7 @@ our @EXPORT_OK = qw(gen_help);
 
 sub gen_help {
     my $help = q{
-    ## SvelteKit Resource Generator
+## SvelteKit Resource Generator
 
 This is a sveltekit generator for scaffolding resources
 
@@ -53,6 +53,11 @@ Fields
 (field_type):(input_type)
 e.g. From above
 name:text -> field_type = name and input_type = text
+
+
+### Generate Resourceful components with gen.resource.component
+Has the same api as the rest of the controls
+
 
 # DOCS for Generation an api which contains the schema files, api files and interface files
 
@@ -101,7 +106,6 @@ fields -> [name, description]
 # Run command
 
 ` $ paj (help | --help | -h)`
-
 
 
   };

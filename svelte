@@ -17,6 +17,11 @@ use Svelte::Routes::Slug::Edit;
 use Svelte::Schema;
 use Svelte::Api;
 use Svelte::Interface;
+use Svelte::Components::Component;
+use Svelte::Components::Index;
+use Svelte::Components::New;
+use Svelte::Components::Edit;
+use Svelte::Components::Actions;
 
 my $type      = $ARGV[0];
 my $type_name = $ARGV[1];
@@ -51,21 +56,38 @@ if ( $type_name =~ /(\b.*)ies/ ) {
 }
 
 print("Resource Name: $resource_name \n");
-
-# Default dirs for generated files
+my $dev              = 1;
 my $routes_base_path = "gen/src/routes/$resource_name";
 my $lib_base_path    = "gen/src/lib/";
+
+# Default dirs for generated files
+if ( $dev == 1 ) {
+    $routes_base_path = "gen/src/routes/$resource_name";
+    $lib_base_path    = "gen/src/lib/";
+
+}
+else {
+    $routes_base_path = "src/routes/$resource_name";
+    $lib_base_path    = "src/lib/";
+}
 
 if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
     Svelte::Help::gen_help();
 }
-elsif ( $type =~ "gen.resource" ) {
+elsif ( $type eq "gen.resource" || $type =~ "gen.resource:" ) {
 
     my ( $_ignore, $layout ) = split( ":", $type );
 
     if ($layout) {
         print("Got layout of file: $layout \n");
-        $routes_base_path = "gen/src/routes/($layout)/$resource_name";
+        if ( $dev == 1 ) {
+            $routes_base_path = "gen/src/routes/($layout)/$resource_name";
+
+        }
+        else {
+            $routes_base_path = "src/routes/($layout)/$resource_name";
+
+        }
     }
     if ( -d $routes_base_path ) {
         print "Resource already created. \n";
@@ -137,46 +159,6 @@ elsif ( $type =~ "gen.resource" ) {
     Svelte::Routes::Slug::Edit::gen_slug_edit_page_ts(
         "$edit_path/+page.server.ts", $resource_name_import, $resource_name );
 
-    # # Resource schema
-    # my $schema_path =
-    #   "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
-    # if ( !( -f "$schema_path" ) ) {
-    #     `touch "$schema_path"`;
-    #     Svelte::Schema::gen_resource_schema( "$schema_path",
-    #         $resource_name_singular_import,
-    #         $resource_name_import, $resource_name, @fields );
-
-    # }
-    # else {
-    #     print "File Already exists \n";
-    # }
-
-    # # Resource API
-    # my $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
-    # if ( !( -f "$api_path" ) ) {
-    #     `touch "$api_path"`;
-    #     Svelte::Api::gen_resource_api( "$api_path",
-    #         $resource_name_singular_import,
-    #         $resource_name_import, $resource_name );
-
-    # }
-    # else {
-    #     print "File Already exists \n";
-    # }
-
-    # # Resource interface
-    # my $interface_path =
-    #   "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
-    # if ( !( -f "$interface_path" ) ) {
-    #     `touch "$interface_path"`;
-    #     Svelte::Interface::gen_resource_interface( "$interface_path",
-    #         $resource_name_singular_import, @fields );
-
-    # }
-    # else {
-    #     print "File Already exists \n";
-    # }
-
     gen_api_interface_schema()
 
     # TODO: Run prettier formatter
@@ -195,6 +177,71 @@ elsif ( $type =~ "gen.api" ) {
     print "Generating API \n";
 
     gen_api_interface_schema();
+}
+elsif ( $type eq "gen.resource.component" ) {
+
+    # Generate API files, Schema, Interface
+    gen_api_interface_schema();
+
+    print "Generating resource component \n";
+    my $component_base_path =
+      "${lib_base_path}components/resource/$resource_name";
+
+    if ( -d $component_base_path ) {
+        print "Resource already created. \n";
+        exit(2);
+    }
+
+    `mkdir  -p "$component_base_path"`;
+
+    # Component
+    my $component_file_path =
+      "$component_base_path/${resource_name_import}Component.svelte";
+
+    `touch "$component_file_path"`;
+    Svelte::Components::Component::gen_component( $component_file_path,
+        $resource_name, $resource_name_import, $resource_name_singular,
+        $resource_name_singular_import, @fields );
+
+    # Index
+    my $component_index_file_path =
+      "$component_base_path/${resource_name_import}Index.svelte";
+
+    `touch "$component_file_path"`;
+
+    Svelte::Components::Index::gen_component_index( $component_index_file_path,
+        $resource_name, $resource_name_import,
+        $resource_name_singular, $resource_name_singular_import, @fields );
+
+    # New
+    my $component_new_file_path =
+      "$component_base_path/${resource_name_import}NewForm.svelte";
+
+    `touch "$component_new_file_path"`;
+
+    Svelte::Components::New::gen_component_new_form( $component_new_file_path,
+        $resource_name, $resource_name_import,
+        $resource_name_singular, $resource_name_singular_import, @fields );
+
+    # Edit
+    my $component_edit_file_path =
+      "$component_base_path/${resource_name_import}EditForm.svelte";
+
+    `touch "$component_edit_file_path"`;
+
+    Svelte::Components::Edit::gen_component_edit_form(
+        $component_edit_file_path, $resource_name, $resource_name_import,
+        $resource_name_singular,   $resource_name_singular_import, @fields );
+
+    # Actions
+    my $component_actions_file_path =
+      "$component_base_path/${resource_name_import}Actions.txt";
+
+    `touch "$component_actions_file_path"`;
+    Svelte::Components::Actions::gen_component_actions(
+        $component_actions_file_path, $resource_name_import,
+        $resource_name_singular );
+
 }
 
 sub gen_api_interface_schema {
