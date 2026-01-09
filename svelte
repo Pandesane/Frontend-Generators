@@ -4,9 +4,9 @@
 
 # Run formatter for all files in the project
 
-# use strict;
-# use warnings;
-# use diagnostics;
+use strict;
+use warnings;
+use diagnostics;
 
 use lib "lib";
 use Svelte::Help;
@@ -18,18 +18,18 @@ use Svelte::Schema;
 use Svelte::Api;
 use Svelte::Interface;
 
-$type      = $ARGV[0];
-$type_name = $ARGV[1];
-@fields    = @ARGV[ 2 .. ( scalar(@ARGV) - 1 ) ];
+my $type      = $ARGV[0];
+my $type_name = $ARGV[1];
+my @fields    = @ARGV[ 2 .. ( scalar(@ARGV) - 1 ) ];
 print "Fields got: @fields \n ";
 
 # Resouce name ie products and product
 
-$resource_name = lc($type_name);
-$resource_name_singular =
+my $resource_name = lc($type_name);
+my $resource_name_singular =
   substr( $resource_name, 0, length($resource_name) - 1 );
-$resource_name_import          = ucfirst($resource_name);
-$resource_name_singular_import = ucfirst($resource_name_singular);
+my $resource_name_import          = ucfirst($resource_name);
+my $resource_name_singular_import = ucfirst($resource_name_singular);
 
 if ( $type_name =~ /(\b.*):(\b.*)/ ) {
     print("True $type_name $1  :   $2\n");
@@ -58,10 +58,10 @@ if ( $type eq "help" || $type eq "--help" || $type eq "-h" ) {
 elsif ( $type =~ "gen.resource" ) {
 
     my ( $_ignore, $layout ) = split( ":", $type );
-    print("Got layout of file: $layout \n");
-    $routes_base_path = "gen/src/routes/$resource_name";
+    my $routes_base_path = "gen/src/routes/$resource_name";
 
     if ($layout) {
+        print("Got layout of file: $layout \n");
         $routes_base_path = "gen/src/routes/($layout)/$resource_name";
     }
     if ( -d $routes_base_path ) {
@@ -71,23 +71,20 @@ elsif ( $type =~ "gen.resource" ) {
     print "Generating resource: $resource_name \n";
 
     # Make resource directories
-    # system("mkdir " ,"$routes_base_path" );
     `mkdir -p "$routes_base_path"`;
     `mkdir -p "$routes_base_path/new"`;
     `mkdir -p "$routes_base_path/[slug]"`;
     `mkdir -p "$routes_base_path/[slug]/edit"`;
 
-    $lib_base_path = "gen/src/lib/";
+    my $lib_base_path = "gen/src/lib/";
     `mkdir -p $lib_base_path`;
     `mkdir -p $lib_base_path/api/`;
     `mkdir -p $lib_base_path/schemas/`;
     `mkdir -p $lib_base_path/interfaces/`;
 
     # # Make index files
-    $index_path = $routes_base_path;
+    my $index_path = $routes_base_path;
     `touch "$index_path/+page.svelte"`;
-
-    # gen_index_page_svelte("$index_path/+page.svelte");
     Svelte::Routes::Index::gen_index_page_svelte( "$index_path/+page.svelte",
         $resource_name_import,   $resource_name,
         $resource_name_singular, @fields );
@@ -97,7 +94,7 @@ elsif ( $type =~ "gen.resource" ) {
         $resource_name_import, $resource_name, @fields );
 
     # # Make new files
-    $new_path = "$routes_base_path/new";
+    my $new_path = "$routes_base_path/new";
     `touch "$new_path/+page.svelte"`;
     Svelte::Routes::New::gen_new_page_svelte(
         "$new_path/+page.svelte", $resource_name_import,
@@ -109,7 +106,7 @@ elsif ( $type =~ "gen.resource" ) {
         $resource_name_import, $resource_name, @fields );
 
     # # Make slug layout file
-    $slug_path = "$routes_base_path/[slug]";
+    my $slug_path = "$routes_base_path/[slug]";
     `touch "$slug_path/+layout.server.ts"`;
     Svelte::Routes::Slug::Index::gen_slug_layout_server_ts(
         "$slug_path/+layout.server.ts",
@@ -128,12 +125,8 @@ elsif ( $type =~ "gen.resource" ) {
         $resource_name_import, $resource_name );
 
     # # Make edit files
-    $edit_path = "$routes_base_path/[slug]/edit";
+    my $edit_path = "$routes_base_path/[slug]/edit";
     `touch "$edit_path/+page.svelte"`;
-
-    # $form_title        = "Edit $resource_name_singular";
-    # $form_submit_label = "Save";
-    # $form_action       = "?/update";
     Svelte::Routes::Slug::Edit::gen_slug_edit_page_svelte(
         "$edit_path/+page.svelte", $resource_name_import,
         $resource_name_singular,   $resource_name, @fields );
@@ -143,7 +136,7 @@ elsif ( $type =~ "gen.resource" ) {
         "$edit_path/+page.server.ts", $resource_name_import, $resource_name );
 
     # Resource schema
-    $schema_path =
+    my $schema_path =
       "$lib_base_path/schemas/${resource_name_singular_import}Schema.ts";
     if ( !( -f "$schema_path" ) ) {
         `touch "$schema_path"`;
@@ -157,7 +150,7 @@ elsif ( $type =~ "gen.resource" ) {
     }
 
     # Resource API
-    $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
+    my $api_path = "$lib_base_path/api/${resource_name_import}API.ts";
     if ( !( -f "$api_path" ) ) {
         `touch "$api_path"`;
         Svelte::Api::gen_resource_api( "$api_path",
@@ -170,7 +163,7 @@ elsif ( $type =~ "gen.resource" ) {
     }
 
     # Resource interface
-    $interface_path =
+    my $interface_path =
       "$lib_base_path/interfaces/I${resource_name_singular_import}.ts";
     if ( !( -f "$interface_path" ) ) {
         `touch "$interface_path"`;
