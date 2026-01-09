@@ -38,18 +38,24 @@ if ( $api_module =~ /(\b.*):(\b.*)/ ) {
     $module_file_name = $2;
 
     if ( $module_file_name =~ /(\b.*)y/ ) {
-    print("True $module_file_name $1  :   $2\n");
+        print("True $module_file_name $1  :   $2\n");
 
-    # $api_module = $1;
-    $api_module_lc_plural   = lcfirst("${1}ies");    # s is added dynamically
-    $api_module_lc_singular = lcfirst("${1}y");      # s is added dynamically
-    $module_file_name       = lcfirst("${1}ies");
+        # $api_module = $1;
+        $api_module_lc_plural   = lcfirst("${1}ies");   # s is added dynamically
+        $api_module_lc_singular = lcfirst("${1}y");     # s is added dynamically
+        $module_file_name       = lcfirst("${1}ies");
+
+    }
+    else {
+        $api_module_lc_plural = lc("${module_file_name}s");
+
+        # s is added dynamically
+        $api_module_lc_singular =
+          lc("${module_file_name}");                    # s is added dynamically
+        $module_file_name = lc("${module_file_name}s");
+    }
 
 }
-
-}
-
-
 
 # print "$resource_type $context $api_module @fields \n";
 
@@ -172,7 +178,8 @@ sub gen_api_json {
       };
     }
 
-    $def_data = $has_file == 1 ? qq{
+    $def_data = $has_file == 1
+      ? qq{
       def data(%${api_module}{} = $api_module_lc_singular) do
           %{
           # Defaults
@@ -191,7 +198,8 @@ sub gen_api_json {
       #   defp get_url(_) do
       #     nil
       #   end
-    }: qq{
+    }
+      : qq{
       def data(%${api_module}{} = $api_module_lc_singular) do
           %{
           # Defaults
@@ -275,7 +283,8 @@ sub gen_api_controller {
           end
     };
 
-    $update = $has_file == 1 ? qq{
+    $update = $has_file == 1
+      ? qq{
         def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
           dbg(attrs)
           ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
@@ -294,7 +303,8 @@ sub gen_api_controller {
 
           render(conn, :update)
         end
-    } : qq{
+    }
+      : qq{
         def update(conn, %{"id" => id} = params) do
 
           ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
