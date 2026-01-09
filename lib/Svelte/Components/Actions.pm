@@ -10,7 +10,9 @@ our @EXPORT_OK = qw(gen_component_actions);
 
 sub gen_component_actions {
     print "Generating component actions.... \n";
-    my ( $file_name, $resource_name_import, $resource_name_singular ) = @_;
+    my ( $file_name, $resource_name_import, $resource_name_singular,
+        $resource_name, $resource_name_singular_import )
+      = @_;
     my $template = qq{
     //Add Actions to the required +page.server.ts
 import { fail, redirect, type Actions } from '\@sveltejs/kit';
@@ -84,6 +86,14 @@ export const actions: Actions = {
 
 
 };
+
+
+
+//Load function
+export const load: LayoutServerLoad = async ({ params }) => {
+  let ${resource_name}: I${resource_name_singular_import}[] = await ${resource_name_import}API.list();
+  return { ${resource_name}: ${resource_name} };
+}
 
 
 

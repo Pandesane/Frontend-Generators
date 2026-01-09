@@ -8,7 +8,7 @@ use strict;
 use warnings;
 use diagnostics;
 
-use lib "lib";
+use lib "lib", "/home/pande/bin/lib";
 use Svelte::Help;
 use Svelte::Routes::Index;
 use Svelte::Routes::New;
@@ -56,7 +56,8 @@ if ( $type_name =~ /(\b.*)ies/ ) {
 }
 
 print("Resource Name: $resource_name \n");
-my $dev              = 1;
+my $dev = 0;
+
 my $routes_base_path = "gen/src/routes/$resource_name";
 my $lib_base_path    = "gen/src/lib/";
 
@@ -196,7 +197,7 @@ elsif ( $type eq "gen.resource.component" ) {
 
     # Component
     my $component_file_path =
-      "$component_base_path/${resource_name_import}Component.svelte";
+      "$component_base_path/${resource_name_singular_import}Component.svelte";
 
     `touch "$component_file_path"`;
     Svelte::Components::Component::gen_component( $component_file_path,
@@ -205,7 +206,7 @@ elsif ( $type eq "gen.resource.component" ) {
 
     # Index
     my $component_index_file_path =
-      "$component_base_path/${resource_name_import}Index.svelte";
+      "$component_base_path/${resource_name_singular_import}Index.svelte";
 
     `touch "$component_file_path"`;
 
@@ -215,7 +216,7 @@ elsif ( $type eq "gen.resource.component" ) {
 
     # New
     my $component_new_file_path =
-      "$component_base_path/${resource_name_import}NewForm.svelte";
+      "$component_base_path/${resource_name_singular_import}NewForm.svelte";
 
     `touch "$component_new_file_path"`;
 
@@ -225,7 +226,7 @@ elsif ( $type eq "gen.resource.component" ) {
 
     # Edit
     my $component_edit_file_path =
-      "$component_base_path/${resource_name_import}EditForm.svelte";
+      "$component_base_path/${resource_name_singular_import}EditForm.svelte";
 
     `touch "$component_edit_file_path"`;
 
@@ -235,12 +236,14 @@ elsif ( $type eq "gen.resource.component" ) {
 
     # Actions
     my $component_actions_file_path =
-      "$component_base_path/${resource_name_import}Actions.txt";
+      "$component_base_path/${resource_name_singular_import}Actions.txt";
 
     `touch "$component_actions_file_path"`;
     Svelte::Components::Actions::gen_component_actions(
         $component_actions_file_path, $resource_name_import,
-        $resource_name_singular );
+        $resource_name_singular,      $resource_name,
+        $resource_name_singular_import
+    );
 
 }
 
