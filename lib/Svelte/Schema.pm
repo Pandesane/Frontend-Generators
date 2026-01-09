@@ -5,13 +5,16 @@ use diagnostics;
 
 use base "Exporter";
 
+use lib "lib";
+use Svelte::Funcs;
+
 our @EXPORT_OK = qw(gen_resource_schema);
 
 sub gen_resource_schema {
     my ( $file_name, $resource_name_singular_import,
-        $resource_name_import, $resource_name )
+        $resource_name_import, $resource_name, @fields )
       = @_;
-    my $gen_fields = gen_schema_fields();
+    my $gen_fields = Svelte::Funcs::gen_schema_fields(@fields);
     my $template   = qq{
      import * as z from "zod";
 
@@ -23,7 +26,7 @@ sub gen_resource_schema {
       export default ${resource_name_singular_import}Schema
   };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
 

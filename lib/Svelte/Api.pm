@@ -4,6 +4,8 @@ use strict;
 use diagnostics;
 
 use base "Exporter";
+use lib "lib";
+use Svelte::Funcs;
 
 our @EXPORT_OK = qw(gen_resource_api);
 
@@ -34,7 +36,7 @@ sub gen_resource_api {
       export default ${resource_name_import}API
   };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
 

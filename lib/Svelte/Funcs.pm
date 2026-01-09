@@ -17,8 +17,8 @@ our @EXPORT_OK = qw(
 sub gen_edit_form {
 
     # my ($form_type) = @_;
-    my ( $form_type, $file_name, @fields, $resource_name_import, $resource_name,
-        $resource_name_singular )
+    my ( $file_name, $resource_name_import, $resource_name_singular,
+        $resource_name, @fields )
       = @_;
 
     my $form_heading      = "Edit $resource_name_singular";
@@ -35,7 +35,11 @@ sub gen_edit_form {
     foreach my $i (@fields) {
         my ( $field, $field_type ) = split( ":", $i );
         print "$field  $field_type \n";
-        my $input = get_edit_input( $field, $field_type );
+
+        # my $input = get_edit_input( $field, $field_type );
+        my $input =
+          get_edit_input( $field, $field_type, $resource_name_singular,
+            $resource_name );
         if ( $field_type eq "file" ) {
             $has_file = 1;
         }
@@ -138,8 +142,7 @@ sub push_data_to_file {
 }
 
 sub generate_divs {
-    my ( $resource_name_singular,$prefix_data, @fields ) = @_;
-    
+    my ( $resource_name_singular, $prefix_data, @fields ) = @_;
 
     my $gen_divs = "";
     foreach my $i (@fields) {
@@ -240,9 +243,7 @@ sub generate_form_data {
 }
 
 sub gen_schema_fields {
-    my ( $form_type, $file_name, @fields, $resource_name_import, $resource_name,
-        $resource_name_singular )
-      = @_;
+    my (@fields) = @_;
     my $gen_fields = "";
     foreach my $i (@fields) {
         my ( $field, $field_type ) = split( ":", $i );
@@ -256,7 +257,7 @@ sub gen_schema_fields {
     return $gen_fields;
 }
 
-sub get_input() {
+sub get_input {
     my ( $field_name, $field_type ) = @_;
     print "Sub input $field_type \n";
     if ( $field_type eq "text" ) {

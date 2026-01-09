@@ -65,10 +65,7 @@ sub gen_slug_page_svelte {
 }
 
 sub gen_slug_page_ts {
-    my ( $file_name, @fields, $resource_name_import, $resource_name_singular,
-        $resource_name_singular_import,
-        $resource_name )
-      = @_;
+    my ( $file_name, $resource_name_import, $resource_name ) = @_;
     my $imports = qq{
     import ${resource_name_import}API from '\$lib/api/${resource_name_import}API';
     import { redirect, type Actions } from '\@sveltejs/kit';
@@ -94,7 +91,7 @@ sub gen_slug_page_ts {
     $actions
   };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
 

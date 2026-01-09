@@ -4,13 +4,13 @@ use strict;
 use diagnostics;
 
 use base "Exporter";
+use lib "lib";
+use Svelte::Funcs;
 
 our @EXPORT_OK = qw(gen_resource_interface);
 
 sub gen_resource_interface {
-    my ( $file_name, $resource_name_singular_import,
-        $resource_name_import, $resource_name, @fields )
-      = @_;
+    my ( $file_name, $resource_name_singular_import, @fields ) = @_;
 
     my $gen_fields = "";
     foreach my $i (@fields) {
@@ -32,7 +32,7 @@ sub gen_resource_interface {
         }
     };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
 

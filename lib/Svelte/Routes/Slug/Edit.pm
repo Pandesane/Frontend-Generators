@@ -4,10 +4,16 @@ use strict;
 use diagnostics;
 use base "Exporter";
 
+use lib "lib";
+
+use Svelte::Funcs;
+
 our @EXPORT_OK = qw(gen_slug_edit_page_svelte gen_slug_edit_page_ts);
 
 sub gen_slug_edit_page_svelte {
-    my ( $file_name, @fields, $resource_name_import ) = @_;
+    my ( $file_name, $resource_name_import, $resource_name_singular,
+        $resource_name, @fields )
+      = @_;
 
     my $imports = qq{
     import type { PageProps } from "./\$types";
@@ -69,7 +75,9 @@ sub gen_slug_edit_page_svelte {
       </script>
     };
 
-    my $form = gen_edit_form();
+    my $form =
+      Svelte::Funcs::gen_edit_form( $file_name, $resource_name_import,
+        $resource_name_singular, $resource_name, @fields );
 
     my $template = qq{
       $script
@@ -77,12 +85,12 @@ sub gen_slug_edit_page_svelte {
 
     };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
 
 sub gen_slug_edit_page_ts {
-    my ( $file_name, @fields, $resource_name_import, $resource_name ) = @_;
+    my ( $file_name, $resource_name_import, $resource_name ) = @_;
 
     my $imports = qq{
     import { fail, redirect, type Actions } from "\@sveltejs/kit";
@@ -124,12 +132,8 @@ sub gen_slug_edit_page_ts {
     $actions
   };
 
-    push_data_to_file( $file_name, $template );
+    Svelte::Funcs::push_data_to_file( $file_name, $template );
 
 }
-
-
-
-
 
 1;
