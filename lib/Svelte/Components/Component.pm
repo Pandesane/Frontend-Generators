@@ -16,6 +16,10 @@ sub gen_component {
 
     print "Generating Compnent... \n";
 
+     my $gen_divs =
+      Svelte::Funcs::generate_divs( $resource_name_singular, 0, @fields );
+
+# <p>Product File: {${resource_name_singular}.id}</p>
     my $template = qq{
         <script lang="ts">
   import { enhance } from "\$app/forms";
@@ -31,8 +35,13 @@ sub gen_component {
   let dialogElementEdit: HTMLDialogElement;
 </script>
 
+
+
 <div>
-  <p>Product File: {${resource_name_singular}.id}</p>
+
+        <div>
+          $gen_divs
+        </div>
   <div class="flex justify-around">
     <form action="?/delete_${resource_name_singular}" method="post" use:enhance>
       <input type="hidden" name="id" value={${resource_name_singular}.id} />

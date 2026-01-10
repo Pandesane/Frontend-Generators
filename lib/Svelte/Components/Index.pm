@@ -26,9 +26,9 @@ sub gen_component_index {
   let { ${resource_name} }: { ${resource_name}: I${resource_name_singular_import}[] } = \$props();
 </script>
 
-<div class="mx-2">
+<div class="mx-2 mt-4">
   <div class="flex justify-between">
-    <p class="font-medium text-xl">Product Files</p>
+    <p class="font-medium text-xl">${resource_name_import} Listing</p>
     <button
       onclick={() => {
         dialogElementAdd.showModal();
@@ -41,7 +41,7 @@ sub gen_component_index {
 
   <div class="mt-4 w-full">
     {#each ${resource_name} as ${resource_name_singular}}
-      <${resource_name_singular_import}Component ${resource_name_singular}EditForm={{}} {${resource_name_singular}} />
+      <${resource_name_singular_import}Component ${resource_name_singular}EditForm={{ errors: new Map(), success: false }} {${resource_name_singular}} />
     {/each}
   </div>
 </div>
@@ -50,7 +50,7 @@ sub gen_component_index {
 <dialog bind:this={dialogElementAdd} class="modal">
   <div class="modal-box">
     <${resource_name_singular_import}NewForm
-      ${resource_name_singular}Form={{}}
+      ${resource_name_singular}Form={{ errors: new Map(), success: false }}
       closeModal={() => {
         dialogElementAdd.close();
       }}
