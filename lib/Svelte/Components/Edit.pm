@@ -38,7 +38,7 @@ sub gen_component_edit_form {
     my $vars = $has_file == 1
       ? qq{
       // Defaults
-      let { ${resource_name_singular}EditForm, ${resource_name_singular} ,  closeModal } = \$props();
+      let { ${resource_name_singular}EditForm, ${resource_name_singular} ,  closeModal, relation_id } = \$props();
       let formValidation: FormValidation | undefined | null = \$state();
       let jsonState = \$state("");
 
@@ -50,7 +50,7 @@ sub gen_component_edit_form {
     }
       : qq{
      // Defaults
-      let { ${resource_name_singular}EditForm, ${resource_name_singular} ,  closeModal } = \$props();
+      let { ${resource_name_singular}EditForm, ${resource_name_singular} ,  closeModal, relation_id } = \$props();
       let formValidation: FormValidation | undefined | null = \$state();
       let jsonState = \$state("");
 

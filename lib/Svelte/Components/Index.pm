@@ -23,7 +23,7 @@ sub gen_component_index {
   import ${resource_name_singular_import}NewForm from "./${resource_name_singular_import}NewForm.svelte";
   let dialogElementAdd: HTMLDialogElement;
 
-  let { ${resource_name} }: { ${resource_name}: I${resource_name_singular_import}[] } = \$props();
+  let { ${resource_name} , relation_id}: { ${resource_name}: I${resource_name_singular_import}[], relation_id: string | number } = \$props();
 </script>
 
 <div class="mx-2 mt-4">
@@ -41,12 +41,12 @@ sub gen_component_index {
 
   <div class="mt-4 w-full">
     {#each ${resource_name} as ${resource_name_singular}}
-      <${resource_name_singular_import}Component ${resource_name_singular}EditForm={{ errors: new Map(), success: false }} {${resource_name_singular}} />
+      <${resource_name_singular_import}Component  {relation_id} ${resource_name_singular}EditForm={{ errors: new Map(), success: false }} {${resource_name_singular}} />
     {/each}
   </div>
 </div>
 
-<!-- Add New Product File -->
+<!-- Add New ${resource_name_singular_import}File -->
 <dialog bind:this={dialogElementAdd} class="modal">
   <div class="modal-box">
     <${resource_name_singular_import}NewForm
@@ -54,6 +54,7 @@ sub gen_component_index {
       closeModal={() => {
         dialogElementAdd.close();
       }}
+      {relation_id}
     />
 
     <div class="modal-action">

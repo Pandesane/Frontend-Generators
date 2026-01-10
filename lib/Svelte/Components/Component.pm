@@ -19,7 +19,6 @@ sub gen_component {
     my $gen_divs =
       Svelte::Funcs::generate_divs( $resource_name_singular, 0, @fields );
 
-    # <p>Product File: {${resource_name_singular}.id}</p>
     my $template = qq{
         <script lang="ts">
           import { enhance } from "\$app/forms";
@@ -42,7 +41,7 @@ sub gen_component {
         <div>
                   $gen_divs
                 </div>
-          <div class="flex justify-around">
+          <div class="flex justify-around my-4">
             <form action="?/delete_${resource_name_singular}" method="post" use:enhance>
               <input type="hidden" name="id" value={${resource_name_singular}.id} />
               <input type="hidden" name="redirect" value={page.url.href} />
@@ -64,7 +63,7 @@ sub gen_component {
           </div>
         </div>
 
-        <!-- Edit Product File -->
+        <!-- Edit ${resource_name_singular_import} File -->
         <dialog bind:this={dialogElementEdit} class="modal">
           <div class="modal-box">
             <${resource_name_singular_import}EditForm

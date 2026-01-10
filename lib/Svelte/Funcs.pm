@@ -155,8 +155,7 @@ sub gen_component_edit_form {
         <input type="hidden" name="validation" value={jsonState} />
         <input type="hidden" name="id" value={${resource_name_singular}.id} />
         <input type="hidden" name="redirect" value={page.url.href} />
-          <!-- Add relationship_id -->
-          <!-- <input type="hidden" name="id" value={relationship_id} /> -->
+        <input type="hidden" name="relation_id" value={relation_id} />
 
 
         $gen_form
@@ -437,6 +436,8 @@ sub generate_form_component_data {
         $form_title
         <input type="hidden" name="validation" value={jsonState} />
         <input type="hidden" name="redirect" value={page.url.href} />
+        <input type="hidden" name="relation_id" value={relation_id} />
+
         $gen_form
         $form_submit_button
         </form>

@@ -39,7 +39,7 @@ sub gen_component_new_form {
       ? qq{
 
       // Defaults
-        let { ${resource_name_singular}Form, closeModal } = \$props();
+        let { ${resource_name_singular}Form, closeModal , relation_id }  = \$props();
         let formValidation: FormValidation | undefined | null = \$state();
         let jsonState = \$state("");
         // let form: HTMLFormElement;
@@ -55,7 +55,7 @@ sub gen_component_new_form {
     }
       : qq{
       // Defaults
-        let { ${resource_name_singular}Form, closeModal } = \$props();
+        let { ${resource_name_singular}Form, closeModal, relation_id } = \$props();
         let formValidation: FormValidation | undefined | null = \$state();
         let jsonState = \$state("");
         // let form: HTMLFormElement;
