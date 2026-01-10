@@ -46,6 +46,7 @@ sub gen_component {
             <form action="?/delete_${resource_name_singular}" method="post" use:enhance>
               <input type="hidden" name="id" value={${resource_name_singular}.id} />
               <input type="hidden" name="redirect" value={page.url.href} />
+              <input type="hidden" name="relation_id" value={relation_id}>
 
               <button  onclick={(e) => {
                   let btn = e.target as HTMLButtonElement;
