@@ -29,7 +29,8 @@ sub gen_component {
             let {
               $resource_name_singular,
               ${resource_name_singular}EditForm,
-            }: { ${resource_name_singular}: I${resource_name_singular_import}; ${resource_name_singular}EditForm: any } = \$props();
+              relation_id
+            }: { ${resource_name_singular}: I${resource_name_singular_import}; ${resource_name_singular}EditForm: any, relation_id: string | number } = \$props();
 
             let dialogElementEdit: HTMLDialogElement;
           </script>
@@ -72,6 +73,7 @@ sub gen_component {
               }}
               {${resource_name_singular}}
               {${resource_name_singular}EditForm}
+              {relation_id}
             />
             <div class="modal-action">
               <button
