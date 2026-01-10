@@ -78,8 +78,9 @@ export const actions: Actions = {
     let formData = await request.formData()
     let id = String(formData.get("id"))
     let redirect_url = String(formData.get("redirect"))
+     let relation_id = String(formData.get("relation_id"))
 
-    await ${resource_name_import}API.delete(id)
+    await ${resource_name_import}API.delete(id,  { relation_id: relation_id })
     throw redirect(303, redirect_url)
 
   }
