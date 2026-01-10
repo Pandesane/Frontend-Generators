@@ -186,7 +186,7 @@ elsif ( $type eq "gen.resource.component" ) {
 
     print "Generating resource component \n";
     my $component_base_path =
-      "${lib_base_path}components/resource/$resource_name";
+      "${lib_base_path}components/resources/$resource_name";
 
     if ( -d $component_base_path ) {
         print "Resource already created. \n";
