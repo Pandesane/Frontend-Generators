@@ -47,7 +47,10 @@ sub gen_component {
       <input type="hidden" name="id" value={${resource_name_singular}.id} />
       <input type="hidden" name="redirect" value={page.url.href} />
 
-      <button class="btn btn-primary" >Delete</button>
+      <button  onclick={(e) => {
+          let btn = e.target as HTMLButtonElement;
+          btn.innerText = "Delete...";
+        } class="btn btn-primary" >Delete</button>
     </form>
 
     <button
