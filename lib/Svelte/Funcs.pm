@@ -432,8 +432,8 @@ sub generate_form_component_data {
           action="$form_action"
           method="POST"
           enctype="multipart/form-data"
-          use:enhance
         >
+          // use:enhance
         $form_title
         <input type="hidden" name="validation" value={jsonState} />
         <input type="hidden" name="redirect" value={page.url.href} />
