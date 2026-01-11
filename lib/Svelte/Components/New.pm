@@ -16,10 +16,10 @@ sub gen_component_new_form {
         $resource_name_singular, $resource_name_singular_import, @fields )
       = @_;
     my $imports = qq{
-       import { enhance } from "\$app/forms";
+      import { enhance } from "\$app/forms";
       import Validator from "\$lib/api/Validator";
       import FileInputUploader from "\$lib/components/FileInputUploader.svelte";
-      import type { FormValidation } from "\$lib/interfaces/types";
+      import type { FileUploadStatus, FormValidation } from "\$lib/interfaces/types";
       import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
       import { page } from "\$app/state";
       import { onMount } from "svelte";
@@ -37,9 +37,11 @@ sub gen_component_new_form {
 
     my $default_vars = qq{
        // Defaults
-        let { ${resource_name_singular}Form, closeModal , relation_id }  = \$props();
-        let jsonState = \$state("");
-        // let form: HTMLFormElement;
+        let { ${resource_name_singular}Form, closeModal , relation_id }: {
+                        ${resource_name_singular}Form: any;
+                        closeModal: () => void;
+                        relation_id : string | number;
+                      } = \$props();
 
         let formValidation: FormValidation | undefined | null = \$state({
           errors: new Map(),
@@ -47,53 +49,43 @@ sub gen_component_new_form {
           successful: new Map(),
           numberOfFields: 2,
         });
+
+        let jsonState = \$state("");
+        // let form: HTMLFormElement;
           let formStatus = \$state("Enabled after file is uploaded to server");
           let form: HTMLFormElement;
           let submitBtn: HTMLButtonElement;
+
     };
 
     my $vars = $has_file == 1
       ? qq{
           $default_vars
 
-
           //File Variables
           let fileUploader: FileInputUploader;
 
-
         //File Variables
-        let accept = "image/*";
+        let accept = "video/*";
         let uuid: string | undefined = \$state();
-        let fileUploadDone = \$state(false);
-
-
+        let fileUploadStatus: FileUploadStatus = \$state("start");
     }
       : qq{
       $default_vars
 
     };
 
-
     my $funcs = qq{
         onMount(() => {
         uuid = self.crypto.randomUUID();
         console.log(page.url.href);
         });
-        function uploadDoneCallBack(value: boolean) {
-          fileUploadDone = value;
-        }
-        \$effect(() => {
-          console.log(${resource_name_singular}Form);
-          formValidation = ${resource_name_singular}Form;
-        });
-          function uploadDoneCallBack(value: boolean) {
+        function uploadDoneCallBack(status: FileUploadStatus) {
+            fileUploadStatus = status;
             if (formValidation?.success == false) {
-              fileUploadDone = value;
-
               formStatus =
                 "Finished Uploading File to server. Please fill in the required form fields";
             } else {
-              fileUploadDone = value;
               submitBtn.disabled = false;
               formStatus = "Finished Uploading File to server.";
             }
@@ -101,26 +93,40 @@ sub gen_component_new_form {
 
           export function resetForm() {
             form.reset();
-            submitBtn.disabled = true;
           }
+
+          export function disableSubmitBtn() {
+              // submitBtn.disabled = true;
+            }
 
           export function cleanUpForm() {
-            console.log("Running cleanup...");
-            // submitBtn.disabled = true;
-
             fileUploader.cleanUpResources();
+            formValidation = {
+              errors: new Map(),
+              success: false,
+              successful: new Map(),
+              numberOfFields: 2,
+            };
+            fileUploadStatus = "start";
           }
 
+            \$effect(() => {
+              console.log("Running effect...........");
+              if (
+                formValidation?.successful.size == formValidation?.numberOfFields &&
+                fileUploadStatus == "finished"
+              ) {
+                submitBtn.disabled = false;
+              } else {
+                submitBtn.disabled = true;
+              }
+            });
 
-        // TODO: Find a way to invalidated the form data after it has being uploaded to server
-        // let submitForm: SubmitFunction = async ({}) => {
-        //   return ({ result, formElement }) => {
-        //     applyAction(result);
-        //     if (result.type == "success") {
-        //       formElement.reset();
-        //     }
-        //   };
-        // };
+          onMount(() => {
+                formValidation = ${resource_name_singular}Form;
+            });
+
+
     };
 
     my $form =

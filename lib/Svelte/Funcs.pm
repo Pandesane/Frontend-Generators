@@ -120,14 +120,22 @@ sub gen_component_edit_form {
     my $form_submit_button = $has_file == 1
       ? qq{
         <button
-              onclick={()=>{
-          closeModal()
+          bind:this={submitBtn}
+          onclick={()=>{
+          closeModal();
+          cleanUpForm();
+          formValidation = {
+            errors: new Map(),
+            success: false,
+            successful: new Map(),
+            numberOfFields: 2,
+          };
         }}
-        class="btn btn-primary w-full" disabled={!fileUploadDone}
+        class="btn btn-primary w-full"
         >$form_submit_label</button
       >
       <p class="text-sm font-light my-2">
-        Enabled after file is uploaded to server
+        $form_submit_label
       </p>
     }
       : qq{
@@ -140,6 +148,7 @@ sub gen_component_edit_form {
 
     my $form = qq{
         <form
+          bind:this={form}
           onchange={(e) => {
             formValidation = { ...${resource_name_import}API.validator.validateForm(e, formValidation) };
             let json = Validator.setFormValidation(formValidation);
@@ -256,7 +265,12 @@ sub get_component_edit_input {
         print "Creating file input.... \n";
         my $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
-            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="$resource_name Poster" />
+            <FileInputUploader
+              bind:this={fileUploader}
+            {accept}
+              bind:uuid={uuid!}
+             {uploadDoneCallBack}
+             label="$resource_name Poster" />
 
         };
         return $input;
@@ -433,12 +447,7 @@ sub generate_form_component_data {
             formValidation = { ...${resource_name_import}API.validator.validateForm(e, formValidation) };
             let json = Validator.setFormValidation(formValidation);
             jsonState = json;
-                console.log(formValidation, "Pande");
-              if (formValidation.success && fileUploadDone) {
-                submitBtn.disabled = false;
-              } else {
-                submitBtn.disabled = true;
-              }
+
           }}
           class="mx-4 mt-8"
           action="$form_action"
@@ -517,7 +526,7 @@ sub get_input {
              <FileInputUploader
                 bind:this={fileUploader}
                 {accept}
-                uuid={uuid!}
+                bind:uuid={uuid!}
                 {uploadDoneCallBack}
                 label="File Name"
               />

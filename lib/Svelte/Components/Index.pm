@@ -25,7 +25,7 @@ sub gen_component_index {
 
   let { ${resource_name} , relation_id}: { ${resource_name}: I${resource_name_singular_import}[], relation_id: string | number } = \$props();
     let ${resource_name_singular}NewForm: ${resource_name_singular_import}NewForm;
-    let ${resource_name_singular}NewFormValidation = \$state({
+    let ${resource_name_singular}FormValidation = \$state({
       errors: new Map(),
       success: false,
       successful: new Map(),
@@ -49,7 +49,7 @@ sub gen_component_index {
 
   <div class="mt-4 w-full">
     {#each ${resource_name} as ${resource_name_singular}}
-      <${resource_name_singular_import}Component  {relation_id} ${resource_name_singular}EditForm={{ errors: new Map(), success: false }} {${resource_name_singular}} />
+      <${resource_name_singular_import}Component  {relation_id} {${resource_name_singular}} />
     {/each}
   </div>
 </div>
@@ -57,11 +57,10 @@ sub gen_component_index {
 <!-- Add New ${resource_name_singular_import}File -->
 <dialog bind:this={dialogElementAdd} class="modal">
   <div class="modal-box">
-    <${resource_name_singular_import}NewForm
-      ${resource_name_singular}Form={{ errors: new Map(), success: false }}
 
+    <${resource_name_singular_import}NewForm
       bind:this={${resource_name_singular}NewForm}
-      ${resource_name_singular}Form={${resource_name_singular}NewFormValidation}
+      ${resource_name_singular}Form={${resource_name_singular}FormValidation}
       closeModal={() => {
         dialogElementAdd.close();
       }}
@@ -73,12 +72,6 @@ sub gen_component_index {
          onclick={() => {
           dialogElementAdd.close();
           ${resource_name_singular}NewForm.cleanUpForm();
-          ${resource_name_singular}NewFormValidation = {
-            errors: new Map(),
-            success: false,
-            successful: new Map(),
-            numberOfFields: 2,
-          };
         }}
         class="btn btn-primary my-4">Close</button
       >
