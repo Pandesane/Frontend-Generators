@@ -24,6 +24,13 @@ sub gen_component_index {
   let dialogElementAdd: HTMLDialogElement;
 
   let { ${resource_name} , relation_id}: { ${resource_name}: I${resource_name_singular_import}[], relation_id: string | number } = \$props();
+    let ${resource_name_singular}NewForm: ${resource_name_singular_import}NewForm;
+    let ${resource_name_singular}NewFormValidation = \$state({
+      errors: new Map(),
+      success: false,
+      successful: new Map(),
+      numberOfFields: 2,
+    });
 </script>
 
 <div class="mx-2 mt-4">
@@ -32,6 +39,7 @@ sub gen_component_index {
     <button
       onclick={() => {
         dialogElementAdd.showModal();
+        ${resource_name_singular}NewForm.resetForm();
       }}
       class="btn btn-link"
     >
@@ -51,6 +59,9 @@ sub gen_component_index {
   <div class="modal-box">
     <${resource_name_singular_import}NewForm
       ${resource_name_singular}Form={{ errors: new Map(), success: false }}
+
+      bind:this={${resource_name_singular}NewForm}
+      ${resource_name_singular}Form={${resource_name_singular}NewFormValidation}
       closeModal={() => {
         dialogElementAdd.close();
       }}
@@ -59,8 +70,15 @@ sub gen_component_index {
 
     <div class="modal-action">
       <button
-        onclick={() => {
+         onclick={() => {
           dialogElementAdd.close();
+          ${resource_name_singular}NewForm.cleanUpForm();
+          ${resource_name_singular}NewFormValidation = {
+            errors: new Map(),
+            success: false,
+            successful: new Map(),
+            numberOfFields: 2,
+          };
         }}
         class="btn btn-primary my-4">Close</button
       >

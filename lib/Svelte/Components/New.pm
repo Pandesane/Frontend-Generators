@@ -35,36 +35,48 @@ sub gen_component_new_form {
 
     print "Has file $has_file \n";
 
-    my $vars = $has_file == 1
-      ? qq{
-
-      // Defaults
+    my $default_vars = qq{
+       // Defaults
         let { ${resource_name_singular}Form, closeModal , relation_id }  = \$props();
-        let formValidation: FormValidation | undefined | null = \$state();
         let jsonState = \$state("");
         // let form: HTMLFormElement;
 
+        let formValidation: FormValidation | undefined | null = \$state({
+          errors: new Map(),
+          success: false,
+          successful: new Map(),
+          numberOfFields: 2,
+        });
+          let formStatus = \$state("Enabled after file is uploaded to server");
+          let form: HTMLFormElement;
+          let submitBtn: HTMLButtonElement;
+    };
+
+    my $vars = $has_file == 1
+      ? qq{
+          $default_vars
+
+
+          //File Variables
+          let fileUploader: FileInputUploader;
 
 
         //File Variables
         let accept = "image/*";
-        let uuid = self.crypto.randomUUID();
+        let uuid: string | undefined = \$state();
         let fileUploadDone = \$state(false);
 
 
     }
       : qq{
-      // Defaults
-        let { ${resource_name_singular}Form, closeModal, relation_id } = \$props();
-        let formValidation: FormValidation | undefined | null = \$state();
-        let jsonState = \$state("");
-        // let form: HTMLFormElement;
+      $default_vars
 
     };
 
 
     my $funcs = qq{
         onMount(() => {
+        uuid = self.crypto.randomUUID();
         console.log(page.url.href);
         });
         function uploadDoneCallBack(value: boolean) {
@@ -74,6 +86,31 @@ sub gen_component_new_form {
           console.log(${resource_name_singular}Form);
           formValidation = ${resource_name_singular}Form;
         });
+          function uploadDoneCallBack(value: boolean) {
+            if (formValidation?.success == false) {
+              fileUploadDone = value;
+
+              formStatus =
+                "Finished Uploading File to server. Please fill in the required form fields";
+            } else {
+              fileUploadDone = value;
+              submitBtn.disabled = false;
+              formStatus = "Finished Uploading File to server.";
+            }
+          }
+
+          export function resetForm() {
+            form.reset();
+            submitBtn.disabled = true;
+          }
+
+          export function cleanUpForm() {
+            console.log("Running cleanup...");
+            // submitBtn.disabled = true;
+
+            fileUploader.cleanUpResources();
+          }
+
 
         // TODO: Find a way to invalidated the form data after it has being uploaded to server
         // let submitForm: SubmitFunction = async ({}) => {

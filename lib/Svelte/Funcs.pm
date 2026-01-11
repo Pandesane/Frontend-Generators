@@ -109,8 +109,8 @@ sub gen_component_edit_form {
 
         # my $input = get_edit_input( $field, $field_type );
         my $input =
-          get_component_edit_input( $field, $field_type, $resource_name_singular,
-            $resource_name );
+          get_component_edit_input( $field, $field_type,
+            $resource_name_singular, $resource_name );
         if ( $field_type eq "file" ) {
             $has_file = 1;
         }
@@ -401,38 +401,51 @@ sub generate_form_component_data {
 
     my $form_submit_button = $has_file == 1
       ? qq{
+
         <button
-        onclick={() => {
-      closeModal();
-    }}
-         class="btn btn-primary w-full" disabled={!fileUploadDone}
-        >$form_submit_label</button
-      >
+        onclick={(e) => {
+          closeModal();
+          cleanUpForm();
+        }}
+        disabled
+        class="btn btn-primary w-full"
+        bind:this={submitBtn}>$form_submit_label</button
+          >
       <p class="text-sm font-light my-2">
-        Enabled after file is uploaded to server
+        {formStatus}
       </p>
     }
       : qq{
      <button
-     onclick={() => {
-      closeModal();
-    }}
-     class="btn btn-primary w-full">$form_submit_label</button>
+        onclick={(e) => {
+          closeModal();
+          cleanUpForm();
+        }}
+        disabled
+        class="btn btn-primary w-full"
+        bind:this={submitBtn}>$form_submit_label</button>
      };
 
     my $form = qq{
         <form
+        bind:this={form}
           onchange={(e) => {
             formValidation = { ...${resource_name_import}API.validator.validateForm(e, formValidation) };
             let json = Validator.setFormValidation(formValidation);
             jsonState = json;
+                console.log(formValidation, "Pande");
+              if (formValidation.success && fileUploadDone) {
+                submitBtn.disabled = false;
+              } else {
+                submitBtn.disabled = true;
+              }
           }}
           class="mx-4 mt-8"
           action="$form_action"
           method="POST"
           enctype="multipart/form-data"
+          use:enhance
         >
-          // use:enhance
         $form_title
         <input type="hidden" name="validation" value={jsonState} />
         <input type="hidden" name="redirect" value={page.url.href} />
@@ -501,7 +514,13 @@ sub get_input {
         print "Creating file input.... \n";
         my $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
-            <FileInputUploader {accept} {uuid} {uploadDoneCallBack} label="File Name" />
+             <FileInputUploader
+                bind:this={fileUploader}
+                {accept}
+                uuid={uuid!}
+                {uploadDoneCallBack}
+                label="File Name"
+              />
 
         };
         return $input;
