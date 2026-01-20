@@ -101,6 +101,9 @@ module -> ProductAd
 module_file_name -> product_ad
 fields -> [name, description]
 
+
+svelte gen.resource.component products name:text description:textarea price:text main_image_path:file
+
 ## PAJ (paj) Help
 
 # Run command
