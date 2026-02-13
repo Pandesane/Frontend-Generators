@@ -1,0 +1,65 @@
+defmodule VendorWeb.Api.{api_module} do
+ use VendorWeb, :controller
+ alias Vendor.{context}
+ alias VendorProcesses.File.FileUploadSupervisor
+
+  def index(conn, _params) do
+      {api_module_lc_plural} = {context}.list_{api_module_lc_plural}()
+
+      conn
+      |> assign(:{api_module_lc_plural}, {api_module_lc_plural})
+      |> render(:index)
+  end
+
+  def show(conn, %{"id" => id}) do
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+    dbg({api_module_lc_singular})
+
+    conn
+    |> assign(:{api_module_lc_singular}, {api_module_lc_singular})
+    |> render(:show)
+  end
+
+ def create(conn, %{"uuid" => uuid} = params) do
+  {file_path, _mime_type} = FileUploadSupervisor.get_uploaded_file_path(uuid)
+  dbg(file_path)
+
+  # E.g. Map.put(params, "poster_image_path", file_path)
+
+  Map.put(params, file_field, file_path)
+  |> {context}.create_{api_module_lc_singular}()
+  |> dbg()
+
+  render(conn, :create)
+end
+
+  def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
+    dbg(attrs)
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+
+    case FileUploadSupervisor.get_uploaded_file_path(uuid) do
+      nil ->
+        {api_module_lc_singular}
+        |> {context}.update_{api_module_lc_singular}(attrs)
+        |> dbg()
+
+      {file_path, _mime_type} ->
+        {api_module_lc_singular}
+        |> {context}.update_{api_module_lc_singular}(Map.put(attrs, file_field, file_path))
+        |> dbg()
+    end
+
+    render(conn, :update)
+  end
+
+  def delete(conn, %{"id" => id} = params) do
+    dbg(params)
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+
+    {api_module_lc_singular}
+    |> {context}.delete_{api_module_lc_singular}()
+
+    render(conn, :delete)
+  end
+
+end

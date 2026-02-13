@@ -1,0 +1,10 @@
+
+Add project init for creating and initializing the generators for both
+
+Add a scaffold generator that creates both the client and server apps in one director for the application
+
+Use Templates for creating generators
+
+Add users generator for both paj and svelte
+
+Add asterisk generator for both

@@ -1,0 +1,53 @@
+defmodule VendorWeb.Api.{api_module} do
+ use VendorWeb, :controller
+ alias Vendor.{context}
+
+
+  def index(conn, _params) do
+      {api_module_lc_plural} = {context}.list_{api_module_lc_plural}()
+
+      conn
+      |> assign(:{api_module_lc_plural}, {api_module_lc_plural})
+      |> render(:index)
+  end
+
+  def show(conn, %{"id" => id}) do
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+    dbg({api_module_lc_singular})
+
+    conn
+    |> assign(:{api_module_lc_singular}, {api_module_lc_singular})
+    |> render(:show)
+  end
+
+  def create(conn, params) do
+    params
+    |> {context}.create_{api_module_lc_singular}()
+    |> dbg()
+
+    render(conn, :create)
+  end
+
+  def update(conn, %{"id" => id} = params) do
+
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+
+    {api_module_lc_singular}
+    |> {context}.update_{api_module_lc_singular}(params)
+    |> dbg()
+
+
+    render(conn, :update)
+  end
+
+  def delete(conn, %{"id" => id} = params) do
+    dbg(params)
+    {api_module_lc_singular} = {context}.get_{api_module_lc_singular}!(id)
+
+    {api_module_lc_singular}
+    |> {context}.delete_{api_module_lc_singular}()
+
+    render(conn, :delete)
+  end
+
+end

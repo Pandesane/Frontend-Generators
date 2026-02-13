@@ -7,6 +7,12 @@
 
 # Run formatter for all files in the project
 
+use lib "lib";
+
+# use lib "lib", "/home/pande/bin/lib";
+
+use Regex::Regex;
+
 $resource_type = $ARGV[0];
 $context       = $ARGV[1];
 @fields        = @ARGV[ 3 .. ( scalar(@ARGV) - 1 ) ];
@@ -140,37 +146,12 @@ elsif ( $resource_type =~ "gen.api" ) {
 
 sub gen_api_json {
     my ($file_name) = @_;
-    $imports = qq{
-     alias Vendor.$context.{$api_module}
-  };
+    my $template_filename =
+      $has_file == 1
+      ? "./lib/Phoenix/Templates/schema_json_with_file.txt"
+      : "./lib/Phoenix/Templates/schema_json.txt";
 
-    $defs = qq{
-      def index(%{${api_module_lc_plural}: ${api_module_lc_plural}}) do
-        %{data: for(${api_module_lc_singular} <- ${api_module_lc_plural}, do: data(${api_module_lc_singular}))}
-      end
-
-      def create(_assigns) do
-        # dbg(assigns)
-        %{response: "success"}
-      end
-
-      def update(_assigns) do
-        # dbg(assigns)
-        %{response: "success"}
-      end
-
-      def show(%{${api_module_lc_singular}: ${api_module_lc_singular}}) do
-        # dbg(assigns)
-        %{data: data(${api_module_lc_singular})}
-      end
-
-      def delete(_assigns) do
-        # dbg(assigns)
-        %{response: "success"}
-      end
-  };
-
-    $gen_fields = "";
+    my $gen_fields = "";
 
     foreach $field (@fields) {
         $gen_fields .= qq{
@@ -178,171 +159,21 @@ sub gen_api_json {
       };
     }
 
-    $def_data = $has_file == 1
-      ? qq{
-      def data(%${api_module}{} = $api_module_lc_singular) do
-          %{
-          # Defaults
-            id:  ${api_module_lc_singular}.id,
-            created_at:  ${api_module_lc_singular}.inserted_at,
-            updated_at: ${api_module_lc_singular}.updated_at,
-            $gen_fields
-          }
-        |> dbg
-      end
-
-      #  defp get_url("./" <> path) do
-      #     "http://localhost:5000/" <> path
-      #   end
-
-      #   defp get_url(_) do
-      #     nil
-      #   end
-    }
-      : qq{
-      def data(%${api_module}{} = $api_module_lc_singular) do
-          %{
-          # Defaults
-            id:  ${api_module_lc_singular}.id,
-            created_at:  ${api_module_lc_singular}.inserted_at,
-            updated_at: ${api_module_lc_singular}.updated_at,
-            $gen_fields
-          }
-        |> dbg
-      end
-    };
-
-    $module = qq{
-      defmodule VendorWeb.Api.${api_module}JSON do
-          $imports
-          $defs
-          $def_data
-      end
-    };
-
-    push_data_to_file( $file_name, $module );
+    my $template_data = gen_from_template($template_filename);
+    $template_data =~ s/\{gen_fields\}/$gen_fields/g;
+    push_data_to_file( $file_name, $template_data );
 
 }
 
 sub gen_api_controller {
     my ($file_name) = @_;
-    $imports = $has_file == 1
-      ? qq{
-      use VendorWeb, :controller
-      alias Vendor.$context
-      alias VendorProcesses.File.FileUploadSupervisor
-  }
-      : qq{
-      use VendorWeb, :controller
-      alias Vendor.$context
-  };
+    my $template_filename =
+      $has_file == 1
+      ? "./lib/Phoenix/Templates/schema_api_with_file.txt"
+      : "./lib/Phoenix/Templates/schema_api.txt";
 
-    $index = qq{
-    def index(conn, _params) do
-      ${api_module_lc_plural} = $context.list_${api_module_lc_plural}()
-
-      conn
-      |> assign(:${api_module_lc_plural}, ${api_module_lc_plural})
-      |> render(:index)
-    end
-    };
-
-    $show = qq{
-      def show(conn, %{"id" => id}) do
-          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
-          dbg(${api_module_lc_singular})
-
-          conn
-          |> assign(:${api_module_lc_singular}, ${api_module_lc_singular})
-          |> render(:show)
-        end
-    };
-
-    $create = $has_file == 1
-      ? qq{
-        def create(conn, %{"uuid" => uuid} = params) do
-            {file_path, _mime_type} = FileUploadSupervisor.get_uploaded_file_path(uuid)
-            dbg(file_path)
-
-            # E.g. Map.put(params, "poster_image_path", file_path)
-
-            Map.put(params, file_field, file_path)
-            |> $context.create_${api_module_lc_singular}()
-            |> dbg()
-
-            render(conn, :create)
-          end
-    }
-      : qq{
-        def create(conn, params) do
-            params
-            |> $context.create_${api_module_lc_singular}()
-            |> dbg()
-
-            render(conn, :create)
-          end
-    };
-
-    $update = $has_file == 1
-      ? qq{
-        def update(conn, %{"id" => id, "uuid" => uuid} = attrs) do
-          dbg(attrs)
-          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
-
-          case FileUploadSupervisor.get_uploaded_file_path(uuid) do
-            nil ->
-              ${api_module_lc_singular}
-              |> $context.update_${api_module_lc_singular}(attrs)
-              |> dbg()
-
-            {file_path, _mime_type} ->
-              ${api_module_lc_singular}
-              |> $context.update_${api_module_lc_singular}(Map.put(attrs, file_field, file_path))
-              |> dbg()
-          end
-
-          render(conn, :update)
-        end
-    }
-      : qq{
-        def update(conn, %{"id" => id} = params) do
-
-          ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
-
-          ${api_module_lc_singular}
-          |> $context.update_${api_module_lc_singular}(params)
-          |> dbg()
-
-
-          render(conn, :update)
-        end
-    };
-
-    $delete = qq{
-      def delete(conn, %{"id" => id} = params) do
-        dbg(params)
-        ${api_module_lc_singular} = $context.get_${api_module_lc_singular}!(id)
-
-        ${api_module_lc_singular}
-        |> $context.delete_${api_module_lc_singular}()
-
-        render(conn, :delete)
-      end
-    };
-
-    $module = qq{
-      defmodule VendorWeb.Api.$api_module do
-            $imports
-            $index
-            $show
-            $create
-            $update
-            $delete
-
-      end
-    };
-
-    push_data_to_file( $file_name, $module );
+    my $template_data = gen_from_template($template_filename);
+    push_data_to_file( $file_name, $template_data );
 
 }
 
@@ -350,4 +181,44 @@ sub push_data_to_file() {
     my ( $filename, $data ) = @_;
     open my $fh, ">", $filename or die "Cannot open file $filename";
     print $fh "$data \n";
+}
+
+sub gen_from_template {
+    my ($filename) = @_;
+    open my $fh, "<", $filename or die "Cannot open file";
+    my $template = "";
+    while ( my $line = <$fh> ) {
+        $template .= $line;
+    }
+
+    my @match_expressions = (
+        Regex::Regex->new( { regex => qr/\{context\}/, value => $context } ),
+        Regex::Regex->new(
+            { regex => qr/\{api_module\}/, value => $api_module }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_plural\}/,
+                value => $api_module_lc_plural
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_singular\}/,
+                value => $api_module_lc_singular
+            }
+        ),
+
+    );
+
+    foreach my $regex_class (@match_expressions) {
+        my $regex = $regex_class->regex();
+        my $value = $regex_class->value();
+        $template =~ s/$regex/$value/g;
+    }
+
+    # print("$template \n");
+
+    return $template;
+
 }

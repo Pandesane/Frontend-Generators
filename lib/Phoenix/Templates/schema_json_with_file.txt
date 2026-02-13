@@ -1,0 +1,58 @@
+defmodule HealthierWeb.Api.{api_module}JSON do
+  alias Vendor.{context}.{api_module}
+
+   def index(%{{api_module_lc_plural}: {api_module_lc_plural}}) do
+        %{data: for({api_module_lc_singular} <- {api_module_lc_plural}, do: data({api_module_lc_singular}))}
+  end
+
+  def create(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+  end
+
+
+
+      def update(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+      end
+
+
+
+      def show(%{{api_module_lc_singular}: {api_module_lc_singular}}) do
+        # dbg(assigns)
+        %{data: data({api_module_lc_singular})}
+      end
+
+
+
+
+      def delete(_assigns) do
+        # dbg(assigns)
+        %{response: "success"}
+      end
+
+
+
+      def data(%{api_module}{} = {api_module_lc_singular}) do
+          %{
+          # Defaults
+            id:  {api_module_lc_singular}.id,
+            created_at:  {api_module_lc_singular}.inserted_at,
+            updated_at: {api_module_lc_singular}.updated_at,
+            {gen_fields}
+          }
+        |> dbg
+      end
+
+
+
+      #  defp get_url("./" <> path) do
+      #     "http://localhost:5000/" <> path
+      #   end
+
+      #   defp get_url(_) do
+      #     nil
+      #   end
+
+end
