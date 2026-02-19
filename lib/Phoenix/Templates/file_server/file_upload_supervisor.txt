@@ -1,0 +1,46 @@
+defmodule Processes.File.FileUploadSupervisor do
+  use DynamicSupervisor
+  alias Processes.File.FileUploadServer
+
+  def start_link(_args) do
+    DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_args) do
+    DynamicSupervisor.init(strategy: :one_for_one)
+  end
+
+  def create_file_server(uid, file_header) do
+    pid_name = child_name(uid)
+    dbg(pid_name)
+    DynamicSupervisor.start_child(__MODULE__, {FileUploadServer, [pid_name, file_header]})
+  end
+
+  def accept_packet(%{"uid" => uid} = packet) do
+    child_name(uid)
+    |> GenServer.cast({:packet, packet})
+  end
+
+  def done(uid) do
+    child_name(uid)
+    |> GenServer.cast({:done, uid})
+  end
+
+  def get_uploaded_file_path(uid) do
+    name = child_name(uid)
+
+    case GenServer.whereis(name) do
+      nil ->
+        nil
+
+      pid ->
+        GenServer.call(pid, :get_file_path)
+    end
+
+    # |> GenServer.call(:get_file_path)
+  end
+
+  defp child_name(uid) do
+    {:via, Registry, {{app_name}.FileServerRegistry, uid}}
+  end
+end

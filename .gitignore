@@ -3,3 +3,5 @@
 src/*
 gen/*
 .svelte
+examples/*
+vendor_web/*

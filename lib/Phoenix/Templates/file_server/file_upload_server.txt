@@ -1,0 +1,142 @@
+defmodule Processes.File.FileUploadServer do
+  # alias Preprocessor.Preprocessor
+  # alias Processes.File.FileUploadAgent
+  use GenServer
+
+  # @file_upload_topic "file-upload-done"
+  # Server
+  # TODO: Accept a file packet header instead
+  def start_link(pid_name, file_header) do
+    dbg("Starting file upload server with uid: ")
+    dbg(file_header)
+    GenServer.start_link(__MODULE__, file_header, name: pid_name)
+  end
+
+  def init(file_header) do
+    %{"filename" => filename, "mime_type" => mime_type} =
+      file_header
+
+    {:ok, %{packets: [], filename: filename, mime_type: mime_type}}
+  end
+
+  # def stat
+
+  def handle_cast({:packet, packet}, %{packets: packets} = state) do
+    dbg(packet)
+    %{"data" => data, "sequence" => sequence} = packet
+    binary = :base64.decode(data)
+    packets = [{sequence, binary} | packets]
+    dbg(length(packets))
+    {:noreply, state |> assign(:packets, packets)}
+  end
+
+  def handle_cast(
+        {:done, uuid},
+        %{
+          packets: packets,
+          filename: filename,
+          mime_type: _mime_type
+        } =
+          state
+      ) do
+    dbg("Processing File")
+    # TODO: Broadcast Upload of a new video by user or simply return it
+
+    bin =
+      Enum.sort_by(packets, fn {seq, _} ->
+        seq
+      end)
+      |> depayload(<<>>)
+
+    dbg(bin)
+    path = "./priv/static/videos/" <> filename
+
+    File.write(path, bin)
+
+    # content_data =
+    #   Preprocessor.preprocess(mime_type, path)
+
+    file_path = path
+    dbg(uuid)
+    dbg(filename)
+    dbg(path)
+    # save_file_details(uuid, path, mime_type)
+
+    # TODO: Provide a way to remove this process after the uploaded file has been accessed
+    {:noreply, state |> assign(:saved_file_path, file_path)}
+  end
+
+  def handle_call(
+        :get_file_path,
+        _from,
+        %{
+          saved_file_path: file_path,
+          mime_type: mime_type
+        } =
+          state
+      ) do
+    dbg(file_path)
+    {:stop, :normal, {file_path, mime_type}, state}
+  end
+
+  def child_spec(args) do
+    dbg(args)
+
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, args},
+      restart: :transient
+    }
+  end
+
+  defp depayload([], binary) do
+    binary
+  end
+
+  defp depayload(packets, binary) do
+    [{_, bin} | rest] = packets
+    depayload(rest, binary <> bin)
+  end
+
+  defp assign(map, key, value) do
+    Map.put(map, key, value)
+  end
+
+  # defp save_file_details(uuid, path, mime_type) do
+  #   case String.split(uuid, "=>") do
+  #     [uid, _filename] ->
+  #       message_id = get_message_id(uid)
+
+  #       {:ok, mfa} =
+  #         MessageContext.create_message_file_attachment(%{
+  #           file_path: path,
+  #           file_type: mime_type,
+  #           message_id: message_id
+  #         })
+  #         |> dbg()
+
+  #       # Trigger local registry pub sub for the file path being return for a particular uid
+  #       Registry.dispatch({app_name}.FileUploadPubSub, @file_upload_topic, fn entries ->
+  #         for {pid, _} <- entries,
+  #             do:
+  #               send(
+  #                 pid,
+  #                 {:file_upload_done, uid, :file,
+  #                  %{file_path: format_file_path(mfa.file_path), file_type: mfa.file_type}}
+  #               )
+  #       end)
+
+  #     _ ->
+  #       dbg(:failed_to_split_uuid)
+  #   end
+  # end
+
+  # defp get_message_id(uuid) do
+  #   {_sender_id, _receiver_id, message_id} = FileUploadAgent.get_uuid_data(uuid)
+  #   message_id
+  # end
+
+  # defp format_file_path("./" <> file_path) do
+  #   "http://localhost:4000/" <> file_path
+  # end
+end

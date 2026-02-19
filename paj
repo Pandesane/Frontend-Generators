@@ -7,11 +7,12 @@
 
 # Run formatter for all files in the project
 
-use lib "lib";
+# use lib "lib";
 
-# use lib "lib", "/home/pande/bin/lib";
+use lib "lib", "/home/pande/bin/lib";
 
 use Regex::Regex;
+use Regex::RegexHelpers;
 
 $resource_type = $ARGV[0];
 $context       = $ARGV[1];
@@ -28,7 +29,7 @@ $api_module_lc_singular = lc($api_module);
 # Default don`t include uploaded file receiving
 $has_file = 0;
 
-if ( $api_module =~ /(\b.*)y/ ) {
+if ( $api_module =~ /(\b.*)y$/ ) {
     print("True $api_module $1  :   $2\n");
 
     # $api_module = $1;
@@ -43,7 +44,7 @@ if ( $api_module =~ /(\b.*):(\b.*)/ ) {
     $api_module       = $1;
     $module_file_name = $2;
 
-    if ( $module_file_name =~ /(\b.*)y/ ) {
+    if ( $module_file_name =~ /(\b.*)y$/ ) {
         print("True $module_file_name $1  :   $2\n");
 
         # $api_module = $1;
@@ -96,6 +97,11 @@ if (   $resource_type eq "help"
         module_file_name -> product_ad
         fields -> [name, description]
 
+        ## Run generation for the file server processes
+        paj gen.file_server AppName
+
+        AppName - is the application name
+
 
         ## PAJ (paj) Help
         # Run command
@@ -144,52 +150,17 @@ elsif ( $resource_type =~ "gen.api" ) {
 
 }
 
+elsif ( $resource_type eq "gen.file_server" ) {
+    print "Generating App File Server \n";
+    my $app_name = $ARGV[1];
+    my @match_expressions =
+      ( Regex::Regex->new( { regex => qr/\{app_name\}/, value => $app_name } ),
+      );
+    gen_file_server(@match_expressions);
+}
+
 sub gen_api_json {
     my ($file_name) = @_;
-    my $template_filename =
-      $has_file == 1
-      ? "./lib/Phoenix/Templates/schema_json_with_file.txt"
-      : "./lib/Phoenix/Templates/schema_json.txt";
-
-    my $gen_fields = "";
-
-    foreach $field (@fields) {
-        $gen_fields .= qq{
-        $field: ${api_module_lc_singular}.$field,
-      };
-    }
-
-    my $template_data = gen_from_template($template_filename);
-    $template_data =~ s/\{gen_fields\}/$gen_fields/g;
-    push_data_to_file( $file_name, $template_data );
-
-}
-
-sub gen_api_controller {
-    my ($file_name) = @_;
-    my $template_filename =
-      $has_file == 1
-      ? "./lib/Phoenix/Templates/schema_api_with_file.txt"
-      : "./lib/Phoenix/Templates/schema_api.txt";
-
-    my $template_data = gen_from_template($template_filename);
-    push_data_to_file( $file_name, $template_data );
-
-}
-
-sub push_data_to_file() {
-    my ( $filename, $data ) = @_;
-    open my $fh, ">", $filename or die "Cannot open file $filename";
-    print $fh "$data \n";
-}
-
-sub gen_from_template {
-    my ($filename) = @_;
-    open my $fh, "<", $filename or die "Cannot open file";
-    my $template = "";
-    while ( my $line = <$fh> ) {
-        $template .= $line;
-    }
 
     my @match_expressions = (
         Regex::Regex->new( { regex => qr/\{context\}/, value => $context } ),
@@ -211,9 +182,120 @@ sub gen_from_template {
 
     );
 
-    foreach my $regex_class (@match_expressions) {
+    my $template_filename =
+      $has_file == 1
+      ? "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt"
+      : "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json.txt";
+
+    my $gen_fields = "";
+
+    foreach $field (@fields) {
+        $gen_fields .= qq{
+        $field: ${api_module_lc_singular}.$field,
+      };
+    }
+
+    my $template_data =
+      gen_from_template( $template_filename, @match_expressions );
+    $template_data =~ s/\{gen_fields\}/$gen_fields/g;
+    push_data_to_file( $file_name, $template_data );
+
+}
+
+sub gen_api_controller {
+
+    my ($file_name) = @_;
+
+    my @match_expressions = (
+        Regex::Regex->new( { regex => qr/\{context\}/, value => $context } ),
+        Regex::Regex->new(
+            { regex => qr/\{api_module\}/, value => $api_module }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_plural\}/,
+                value => $api_module_lc_plural
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_singular\}/,
+                value => $api_module_lc_singular
+            }
+        ),
+
+    );
+    my $template_filename =
+      $has_file == 1
+      ? "/home/pande/bin/lib/" . "Phoenix/Templates/schema_api_with_file.txt"
+      : "/home/pande/bin/lib/" . "Phoenix/Templates/schema_api.txt";
+
+    my $template_data =
+      gen_from_template( $template_filename, @match_expressions );
+    push_data_to_file( $file_name, $template_data );
+
+}
+
+sub push_data_to_file {
+    my ( $filename, $data ) = @_;
+    open my $fh, ">", $filename or die "Cannot open file $filename";
+    print $fh "$data \n";
+}
+
+sub gen_file_server {
+    my (@match_expressions) = @_;
+    my $base_path = "examples/paj/lib/processes/file_server/";
+    `mkdir -p "$base_path"`;
+    my @generated_files = (
+        $base_path . "file_channel.ex",
+        $base_path . "file_socket.ex",
+        $base_path . "file_upload_agent.ex",
+        $base_path . "file_upload_server.ex",
+        $base_path . "file_upload_supervisor.ex",
+
+    );
+    print "Func for file server \n";
+
+    my $base_filename  = "lib/Phoenix/Templates/file_server/";
+    my @template_files = (
+        $base_filename . "file_channel.txt",
+        $base_filename . "file_socket.txt",
+        $base_filename . "file_upload_agent.txt",
+        $base_filename . "file_upload_server.txt",
+        $base_filename . "file_upload_supervisor.txt",
+
+    );
+
+    for ( my $i = 0 ; $i < scalar(@template_files) ; $i++ ) {
+        my $template_filename = $template_files[$i];
+        my $filename          = $generated_files[$i];
+
+        my $template =
+          gen_from_template( $template_filename, @match_expressions );
+
+        # print "$template \n";
+        push_data_to_file( $filename, $template );
+
+    }
+
+    my $console_output =
+      gen_from_template( $base_filename . "MORE.txt", @match_expressions );
+
+    print("$console_output \n");
+}
+
+sub gen_from_template {
+    my ( $template_filename, @in_match_expressions ) = @_;
+    open my $fh, "<", $template_filename or die "Cannot open file $!";
+    my $template = "";
+    while ( my $line = <$fh> ) {
+        $template .= $line;
+    }
+
+    foreach my $regex_class (@in_match_expressions) {
         my $regex = $regex_class->regex();
         my $value = $regex_class->value();
+        print("Regex Class: $regex $value \n");
         $template =~ s/$regex/$value/g;
     }
 

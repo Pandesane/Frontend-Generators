@@ -1,0 +1,13 @@
+
+Add the following to the application tree
+///*
+Processes.File.FileUploadAgent,
+{Registry,
+ keys: :duplicate, name: {app_name}.FileUploadPubSub, partitions: System.schedulers_online()},
+{Registry, keys: :unique, name: {app_name}.FileServerRegistry},
+Processes.File.FileUploadSupervisor,
+*///
+
+Add the following to the mix.exs file and run mix deps.get
+{:image, "~> 0.62.1"},
+{:random_string_generator, "~> 1.0"},
