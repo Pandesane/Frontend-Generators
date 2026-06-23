@@ -1,0 +1,76 @@
+
+
+
+import { form, getRequestEvent, query } from "$app/server";
+import DiseasesAPI from "$lib/api/DiseasesAPI";
+import type IDisease from "$lib/interfaces/IDisease";
+import { createToast } from "$lib/state/AddToast.svelte";
+import { redirect } from "@sveltejs/kit";
+import * as v from "valibot"
+
+
+
+
+
+
+export const getDiseases = query(async () => {
+  let diseases: IDisease[] = await DiseasesAPI.list()
+  console.log(diseases)
+  return diseases
+})
+
+export const getDisease = query(v.union([v.string(), v.number()]), async (disease_id) => {
+  let disease: IDisease = await DiseasesAPI.getDisease(disease_id.toString())
+  return disease
+})
+
+
+
+export const createNewDiseaseForm = form(NewDiseaseFormSchema, async (data) => {
+  console.log("Diseases form", data);
+
+  let response: { success: boolean, flash: string } = await DiseasesAPI.create(data)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    await getDiseases().refresh()
+    throw redirect(303, "/diseases");
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+})
+
+
+
+
+
+
+export const editDiseaseForm = form(EditDiseaseFormSchema, async (data) => {
+  console.log("Diseases form", data);
+
+  let response: { success: boolean, flash: string } = await DiseasesAPI.update(Number.parseInt(data.id.toString()), data)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    await getDisease(data.id).refresh()
+    throw redirect(303, `/diseases/${data.id}`)
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+})
+
+
+
+
+
+export const deleteDiseaseForm = form(DeleteDiseaseSchema, async (data) => {
+  let response: { success: boolean, flash: string } =    await DiseasesAPI.delete(data.id)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    throw redirect(303, `/diseases`)
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+
+});

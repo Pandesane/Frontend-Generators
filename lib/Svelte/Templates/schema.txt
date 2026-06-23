@@ -1,0 +1,29 @@
+
+
+import * as v from "valibot";
+
+export const {resource_name_singular_import}Schema = v.object({
+      name: v.string(),
+      description: v.string(),
+
+})
+
+
+
+
+
+const New{resource_name_singular_import}FormSchema = v.object({
+  name: v.pipe(v.string(), v.nonEmpty("Name can't be blank."), v.minLength(5, "Name must be at least 5 characters long")),
+  description: v.pipe(v.string(), v.nonEmpty("Description cannot be blank."), v.minLength(15, "Description must be at least 15 characters long")),
+})
+
+
+const Edit{resource_name_singular_import}FormSchema = v.object({
+  name: v.pipe(v.string(), v.nonEmpty("Name can't be blank."), v.minLength(5, "Name must be at least 5 characters long")),
+  id: v.union([v.string(), v.number()]),
+  description: v.pipe(v.string(), v.nonEmpty("Description cannot be blank."), v.minLength(15, "Description must be at least 15 characters long")),
+})
+
+const Delete{resource_name_singular_import}Schema = v.object({
+  id: v.string()
+})

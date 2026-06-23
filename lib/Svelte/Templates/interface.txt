@@ -1,0 +1,15 @@
+
+
+
+
+        export default interface IDisease {
+          id: string,
+          // create_at: string,
+          // updated_at: string,
+
+            name: string,
+
+            description: string,
+
+        }
+
