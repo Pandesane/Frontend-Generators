@@ -3,9 +3,12 @@ package Svelte::Routes::Slug::Index;
 use strict;
 use warnings;
 use diagnostics;
-use lib "lib";
+# use lib "lib";
+use lib "lib", "/home/pande/bin/lib";
 
 use Svelte::Funcs;
+use Regex::Regex;
+use Regex::RegexHelpers;
 
 use base "Exporter";
 
@@ -18,49 +21,58 @@ sub gen_slug_page_svelte {
         $resource_name, @fields )
       = @_;
 
-    my $imports = q{
-       import { enhance } from "$app/forms";
-       import TopNavBar from "$lib/components/TopNavBar.svelte";
-      import type { PageProps } from "./$types";
-    };
-
-    my $vars = q{
-     const { data }: PageProps = $props();
-    };
-
-    my $script = qq{
-      <script lang="ts">
-      $imports
-      $vars
-      </script>
-    };
-
     my $gen_divs =
       Svelte::Funcs::generate_divs( $resource_name_singular, 1, @fields );
 
-    my $template = qq{
-      $script
-      <TopNavBar to="/$resource_name" title={data.$resource_name_singular.name} />
 
-      <div class="mt-18 mx-2">
-        <div>
-          $gen_divs
-        </div>
 
-        <div class="flex w-full justify-around">
-          <a href="/$resource_name/{data.$resource_name_singular.id}/edit" class="btn btn-primary my-4"
-            >Edit $resource_name_singular</a
-          >
-          <form action="?/delete" method="POST" use:enhance>
-            <input type="hidden" name="id" value={data.$resource_name_singular.id} />
-            <button class="btn btn-primary my-4">Delete</button>
-          </form>
-        </div>
-      </div>
 
-    };
+     my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_import\}/,
+                value => ${resource_name_import}
+            }
+        ),
+         Regex::Regex->new(
+            {
+                regex => qr/\{resource_name\}/,
+                value => ${resource_name}
+            }
+        ),
+         Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular\}/,
+                value => ${resource_name_singular}
+            }
+        ),
+         Regex::Regex->new(
+            {
+                regex => qr/\{gen_divs\}/,
+                value => ${gen_divs}
+            }
+        ),
 
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
+
+    );
+
+
+ my $template_filename = "./lib/Svelte/Templates/routes/slug.txt";
+
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
+
+
+
+
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
 
 }
 

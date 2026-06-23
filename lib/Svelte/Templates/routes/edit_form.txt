@@ -1,0 +1,11 @@
+<form
+    {...edit{resource_name_singular_import}Form}
+    class="mx-4 mt-8"
+    enctype="multipart/form-data"
+    >
+        {form_title}
+        <input type="hidden" name="id" value={{resource_name_singular}.id} />
+
+        {gen_form}
+        {form_submit_button}
+</form>

@@ -1,0 +1,15 @@
+<script lang="ts">
+ import type { PageProps } from "./$types";
+  import FileInputUploader from "$lib/components/FileInputUploader.svelte";
+	import type { FileUploadStatus} from '$lib/interfaces/types';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { createNew{resource_name_singular_import}Form } from '$lib/remote/{resource_name_singular}.remote';
+
+{vars}
+{funcs}
+
+</script>
+
+{form}
+

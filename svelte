@@ -113,7 +113,7 @@ elsif ( $type eq "gen.resource" || $type =~ "gen.resource:" ) {
     `touch "$index_path/+page.svelte"`;
     Svelte::Routes::Index::gen_index_page_svelte( "$index_path/+page.svelte",
         $resource_name_import,   $resource_name,
-        $resource_name_singular, @fields );
+        $resource_name_singular, $resource_name_singular_import, @fields );
 
     `touch "$index_path/+page.server.ts"`;
     Svelte::Routes::Index::gen_index_page_ts( "$index_path/+page.server.ts",
@@ -122,10 +122,9 @@ elsif ( $type eq "gen.resource" || $type =~ "gen.resource:" ) {
     # # Make new files
     my $new_path = "$routes_base_path/new";
     `touch "$new_path/+page.svelte"`;
-    Svelte::Routes::New::gen_new_page_svelte(
-        "$new_path/+page.svelte", $resource_name_import,
-        $resource_name_singular,  @fields
-    );
+    Svelte::Routes::New::gen_new_page_svelte( "$new_path/+page.svelte",
+        $resource_name_import,
+        $resource_name_singular, $resource_name_singular_import, @fields );
 
     `touch "$new_path/+page.server.ts"`;
     Svelte::Routes::New::gen_new_page_server( "$new_path/+page.server.ts",
@@ -154,8 +153,9 @@ elsif ( $type eq "gen.resource" || $type =~ "gen.resource:" ) {
     my $edit_path = "$routes_base_path/[slug]/edit";
     `touch "$edit_path/+page.svelte"`;
     Svelte::Routes::Slug::Edit::gen_slug_edit_page_svelte(
-        "$edit_path/+page.svelte", $resource_name_import,
-        $resource_name_singular,   $resource_name, @fields );
+        "$edit_path/+page.svelte",      $resource_name_import,
+        $resource_name_singular,        $resource_name,
+        $resource_name_singular_import, @fields );
 
     `touch "$edit_path/+page.server.ts"`;
     Svelte::Routes::Slug::Edit::gen_slug_edit_page_ts(
@@ -284,12 +284,13 @@ sub gen_api_interface_schema {
     }
 
     # Remote API
-    my $remote_path = "$lib_base_path/remote/${resource_name_singular}.remote.ts";
+    my $remote_path =
+      "$lib_base_path/remote/${resource_name_singular}.remote.ts";
     if ( !( -f "$remote_path" ) ) {
         `touch "$remote_path"`;
         Svelte::Remote::gen_remote_functions( "$remote_path",
             $resource_name_singular_import,
-            $resource_name_import, $resource_name ,  $resource_name_singular );
+            $resource_name_import, $resource_name, $resource_name_singular );
 
     }
     else {

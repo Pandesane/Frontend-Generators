@@ -1,0 +1,26 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import { delete{resource_name_singular_import}Form, get{resource_name_singular_import} } from '$lib/remote/{resource_name_singular}.remote';
+	import type { PageProps } from './$types';
+
+	const { data }: PageProps = $props();
+	let {resource_name_singular} = $derived(await get{resource_name_singular_import}(page.params.slug!));
+</script>
+
+
+ <div class="mx-2">
+        <div>
+          {gen_divs}
+        </div>
+
+        <div class="flex w-full justify-around">
+          <a href="/{resource_name}/{{resource_name_singular}.id}/edit" class="btn btn-primary my-4"
+            >Edit</a
+          >
+          <form {...delete{resource_name_singular_import}Form}>
+            <input type="hidden" name="id" value={{resource_name_singular}.id} />
+            <button class="btn btn-primary my-4">Delete</button>
+          </form>
+        </div>
+      </div>
+

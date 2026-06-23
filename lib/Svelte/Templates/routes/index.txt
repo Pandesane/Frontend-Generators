@@ -15,8 +15,8 @@
         <a href="/{resource_name}/new" class="btn btn-link">add</a>
       </div>
 
-      {#each data.{resource_name} as {resource_name_singular}}
-        <a href="/{resource_name}/{{resource_name_singular}.id}">
+      {#each {resource_name} as {resource_name_singular}}
+        <a href="/{resource_name}/{{resource_name_singular}.id}" class="my-4">
         {gen_divs}
         </a>
       {/each}

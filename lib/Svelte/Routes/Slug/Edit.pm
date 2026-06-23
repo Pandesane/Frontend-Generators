@@ -12,14 +12,11 @@ our @EXPORT_OK = qw(gen_slug_edit_page_svelte gen_slug_edit_page_ts);
 
 sub gen_slug_edit_page_svelte {
     my ( $file_name, $resource_name_import, $resource_name_singular,
-        $resource_name, @fields )
+        $resource_name, $resource_name_singular_import, @fields )
       = @_;
 
     my $imports = qq{
     import type { PageProps } from "./\$types";
-    import { enhance } from "\$app/forms";
-    import type { FormValidation } from "\$lib/interfaces/types";
-    import Validator from "\$lib/api/Validator";
     import FileInputUploader from "\$lib/components/FileInputUploader.svelte";
     import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
 
@@ -38,54 +35,83 @@ sub gen_slug_edit_page_svelte {
     my $vars = $has_file == 1
       ? qq{
       // Defaults
-      let { form , data}: PageProps = \$props();
-      let formValidation: FormValidation | undefined | null = \$state();
-      let jsonState = \$state("");
+      // let { form , data}: PageProps = \$props();
 
 
       //File Variables
       let accept = "image/*";
-      let uuid = self.crypto.randomUUID();
+      let uuid: string | undefined = \$state();
       let fileUploadDone = \$state(false);
     }
       : qq{
       // Defaults
-      let { form }: PageProps = \$props();
-      let formValidation: FormValidation | undefined | null = \$state();
-      let jsonState = \$state("");
+      //let { form }: PageProps = \$props();
 
 
     };
 
     my $funcs = q{
-  function uploadDoneCallBack(value: boolean) {
-    fileUploadDone = value;
-  }
-  $effect(() => {
-    console.log(form);
-    formValidation = form;
-  });
+      function uploadDoneCallBack(status: FileUploadStatus) {
+        if (status === 'finished') {
+          fileUploadDone = true;
+        } else {
+          fileUploadDone = false;
+        }
+      }
+      onMount(() => {
+        if (browser) {
+          uuid = self.crypto.randomUUID();
+        }
+      });
   };
-
-    my $script = qq{
-      <script lang="ts">
-      $imports
-      $vars
-      $funcs
-      </script>
-    };
 
     my $form =
       Svelte::Funcs::gen_edit_form( $file_name, $resource_name_import,
         $resource_name_singular, $resource_name, @fields );
 
-    my $template = qq{
-      $script
-      $form
+    my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{form\}/,
+                value => ${form}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular\}/,
+                value => ${resource_name_singular}
+            }
+        ),
 
-    };
+        Regex::Regex->new(
+            {
+                regex => qr/\{vars\}/,
+                value => ${vars}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{funcs\}/,
+                value => ${funcs}
+            }
+        ),
 
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
+    );
+
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/routes/edit.txt";
+
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
+
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
 
 }
 
