@@ -1,0 +1,21 @@
+
+import API from "./API"
+import { BASE_URL_PATH } from "./APIConstants"
+
+class {resource_name_import}Api extends API {
+
+  constructor() {
+    super(`${BASE_URL_PATH}/diseases`)
+  }
+
+  async get{resource_name_singular_import}(slug: string): Promise<any> {
+    return await super.get(slug)
+
+  }
+
+
+}
+const {resource_name_import}API = new {resource_name_import}Api()
+
+export default {resource_name_import}API
+

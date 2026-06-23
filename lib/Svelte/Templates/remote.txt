@@ -1,0 +1,77 @@
+
+
+
+import { form, getRequestEvent, query } from "$app/server";
+import  {resource_name_import}API from "$lib/api/{resource_name_import}API";
+import type I{resource_name_singular_import} from "$lib/interfaces/I{resource_name_singular_import}";
+import { createToast } from "$lib/state/AddToast.svelte";
+import { New{resource_name_singular_import}FormSchema,
+ Edit{resource_name_singular_import}FormSchema,
+ Delete{resource_name_singular_import}Schema} from "$lib/schemas/{resource_name_singular_import}Schema.ts";
+import { redirect } from "@sveltejs/kit";
+import * as v from "valibot"
+
+
+
+
+
+
+export const get{resource_name_import} = query(async () => {
+  let {resource_name}: I{resource_name_singular_import}[] = await {resource_name_import}API.list()
+  return {resource_name}
+})
+
+export const get{resource_name_singular_import} = query(v.union([v.string(), v.number()]), async ({resource_name_singular}_id) => {
+  let {resource_name_singular}: I{resource_name_singular_import} = await {resource_name_import}API.get{resource_name_singular_import}({resource_name_singular}_id.toString())
+  return {resource_name_singular}
+})
+
+
+
+export const createNew{resource_name_singular_import}Form = form(New{resource_name_singular_import}FormSchema, async (data) => {
+
+  let response: { success: boolean, flash: string } = await {resource_name_import}API.create(data)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    await get{resource_name_import}().refresh()
+    throw redirect(303, "/{resource_name}");
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+})
+
+
+
+
+
+
+export const edit{resource_name_singular_import}Form = form(Edit{resource_name_singular_import}FormSchema, async (data) => {
+  console.log("Diseases form", data);
+
+  let response: { success: boolean, flash: string } = await {resource_name_import}API.update(Number.parseInt(data.id.toString()), data)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    await get{resource_name_singular_import}(data.id).refresh()
+    throw redirect(303, `/{resource_name}/${data.id}`)
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+})
+
+
+
+
+
+export const delete{resource_name_singular_import}Form = form(Delete{resource_name_singular_import}Schema, async (data) => {
+  let response: { success: boolean, flash: string } =    await {resource_name_import}API.delete(data.id)
+  let { cookies } = getRequestEvent()
+  if (response.success) {
+    createToast(cookies, response.flash, true, "success");
+    throw redirect(303, `/{resource_name}`)
+  } else {
+    createToast(cookies, response.flash, true, "error");
+  }
+
+});

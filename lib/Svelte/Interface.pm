@@ -4,8 +4,12 @@ use strict;
 use diagnostics;
 
 use base "Exporter";
-use lib "lib";
+# use lib "lib";
+use lib "lib", "/home/pande/bin/lib";
+
 use Svelte::Funcs;
+use Regex::Regex;
+use Regex::RegexHelpers;
 
 our @EXPORT_OK = qw(gen_resource_interface);
 
@@ -23,16 +27,36 @@ sub gen_resource_interface {
 
     }
 
-    my $template = qq{
-        export default interface I$resource_name_singular_import {
-          id: string,
-          // create_at: string,
-          // updated_at: string,
-          $gen_fields
-        }
-    };
 
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
+
+     my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{gen_fields\}/,
+                value => ${gen_fields}
+            }
+        )
+
+    );
+
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/interface.txt";
+
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
+
+
+    # print $template_data;
+
+
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
 
 }
 

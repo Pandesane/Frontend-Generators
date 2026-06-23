@@ -1,15 +1,10 @@
 
 
-
-
-        export default interface IDisease {
+        export default interface I{resource_name_singular_import} {
           id: string,
           // create_at: string,
           // updated_at: string,
-
-            name: string,
-
-            description: string,
+            {gen_fields}
 
         }
 

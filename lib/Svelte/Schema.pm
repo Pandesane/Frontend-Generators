@@ -5,8 +5,12 @@ use diagnostics;
 
 use base "Exporter";
 
-use lib "lib";
+# use lib "lib";
+use lib "lib", "/home/pande/bin/lib";
+
 use Svelte::Funcs;
+use Regex::Regex;
+use Regex::RegexHelpers;
 
 our @EXPORT_OK = qw(gen_resource_schema);
 
@@ -20,9 +24,10 @@ sub gen_schema_fields {
                 $gen_fields .= qq{
             $field: v.pipe(v.string(), v.nonEmpty("$field cannot be blank."), v.minLength(15, "$field must be at least 15 characters long")),
             };
-            } else {
+            }
+            else {
 
-               $gen_fields .= qq{
+                $gen_fields .= qq{
                  $field: v.pipe(v.string(), v.nonEmpty("$field can't be blank."), v.minLength(5, "$field must be at least 5 characters long")),
             };
             }
@@ -41,19 +46,34 @@ sub gen_resource_schema {
     my ( $file_name, $resource_name_singular_import,
         $resource_name_import, $resource_name, @fields )
       = @_;
-    my $gen_fields = gen_schema_fields(@fields);
-    my $template   = qq{
-     import * as z from "zod";
+    my $gen_fields        = gen_schema_fields(@fields);
+    my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{gen_fields\}/,
+                value => ${gen_fields}
+            }
+        )
 
-      export const ${resource_name_singular_import}SchemaMap: Record<string, z.ZodString> = {
-        $gen_fields
-      }
-      const ${resource_name_singular_import}Schema = z.object(${resource_name_singular_import}SchemaMap);
+    );
 
-      export default ${resource_name_singular_import}Schema
-  };
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/schema.txt";
 
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
+
+    # $template_data =~ s/\{gen_fields\}/$gen_fields/g;
+    # print $template_data;
+
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
 
 }
 

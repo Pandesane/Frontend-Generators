@@ -15,6 +15,7 @@ use Svelte::Routes::New;
 use Svelte::Routes::Slug::Index;
 use Svelte::Routes::Slug::Edit;
 use Svelte::Schema;
+use Svelte::Remote;
 use Svelte::Api;
 use Svelte::Interface;
 use Svelte::Components::Component;
@@ -251,6 +252,7 @@ sub gen_api_interface_schema {
 
     `mkdir -p $lib_base_path`;
     `mkdir -p $lib_base_path/api/`;
+    `mkdir -p $lib_base_path/remote/`;
     `mkdir -p $lib_base_path/schemas/`;
     `mkdir -p $lib_base_path/interfaces/`;
 
@@ -275,6 +277,19 @@ sub gen_api_interface_schema {
         Svelte::Api::gen_resource_api( "$api_path",
             $resource_name_singular_import,
             $resource_name_import, $resource_name );
+
+    }
+    else {
+        print "File Already exists \n";
+    }
+
+    # Remote API
+    my $remote_path = "$lib_base_path/remote/${resource_name_singular}.remote.ts";
+    if ( !( -f "$remote_path" ) ) {
+        `touch "$remote_path"`;
+        Svelte::Remote::gen_remote_functions( "$remote_path",
+            $resource_name_singular_import,
+            $resource_name_import, $resource_name ,  $resource_name_singular );
 
     }
     else {

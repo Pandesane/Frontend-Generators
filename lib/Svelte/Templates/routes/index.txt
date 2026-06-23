@@ -1,0 +1,24 @@
+<script lang="ts">
+	import { get{resource_name_import} } from '$lib/remote/{resource_name_singular}.remote';
+	import type { PageProps } from './$types';
+
+	// let { data }: PageProps = $props();
+	let {resource_name} = $derived(await get{resource_name_import}())
+
+</script>
+
+
+
+ <div class="mx-2">
+      <div class="flex justify-between items-baseline-last">
+      <p class="my-4">{resource_name} Listing</p>
+        <a href="/{resource_name}/new" class="btn btn-link">add</a>
+      </div>
+
+      {#each data.{resource_name} as {resource_name_singular}}
+        <a href="/{resource_name}/{{resource_name_singular}.id}">
+        {gen_divs}
+        </a>
+      {/each}
+
+    </div>
