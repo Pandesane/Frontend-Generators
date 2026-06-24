@@ -1,0 +1,27 @@
+<script lang="ts">
+	import FileInputUploader from '$lib/components/FileInputUploader.svelte';
+	import type { FileUploadStatus, FormValidation } from '$lib/interfaces/types';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { createNew{resource_name_singular_import}Form } from '$lib/remote/{resource_name_singular}.remote';
+	import { New{resource_name_singular_import}FormSchema } from '$lib/schemas/{resource_name_singular_import}Schema.ts';
+	import * as v from 'valibot';
+
+interface IProps{
+  closeModal: () => void;
+	relation_id: string | number;
+}
+
+	let {
+		closeModal,
+		relation_id
+	}: IProps = $props();
+
+
+ {vars}
+
+ {funcs}
+
+</script>
+
+{form}

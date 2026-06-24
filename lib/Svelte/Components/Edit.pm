@@ -11,21 +11,9 @@ use Svelte::Funcs;
 our @EXPORT_OK = qw(gen_component_edit_form);
 
 sub gen_component_edit_form {
-    print "Generating compeonet edit form..... \n";
     my ( $file_name, $resource_name, $resource_name_import,
         $resource_name_singular, $resource_name_singular_import, @fields )
       = @_;
-
-    my $imports = qq{
-      import { enhance } from "\$app/forms";
-      import type { FileUploadStatus, FormValidation } from "\$lib/interfaces/types";
-      import Validator from "\$lib/api/Validator";
-      import FileInputUploader from "\$lib/components/FileInputUploader.svelte";
-      import ${resource_name_import}API from "\$lib/api/${resource_name_import}API";
-      import { page } from "\$app/state";
-      import type I$resource_name_singular_import from "\$lib/interfaces/I$resource_name_singular_import";
-      import { onMount } from "svelte";
-    };
 
     my $has_file = 0;
     foreach my $i (@fields) {
@@ -35,28 +23,10 @@ sub gen_component_edit_form {
         }
     }
 
-    print "Has file $has_file \n";
-
     my $default_vars = qq{
       // Defaults
-      let {
-      ${resource_name_singular}Validation = \$bindable(),
-       ${resource_name_singular} ,
-       closeModal,
-       relation_id } : {
-          ${resource_name_singular}Validation: FormValidation;
-          ${resource_name_singular}: I$resource_name_singular_import;
-          closeModal: () => void;
-          relation_id: string | number;
-        }
-       = \$props();
-
-      let formValidation: FormValidation | undefined | null = \$state();
-      let jsonState = \$state("");
-      let formStatus = \$state("Enabled after file is uploaded to server");
       let form: HTMLFormElement;
       let submitBtn: HTMLButtonElement;
-      let uuid: string | undefined = \$state();
 
 
     };
@@ -66,12 +36,27 @@ sub gen_component_edit_form {
 
          $default_vars
       //File Variables
+        let formStatus = \$state("Enabled after file is uploaded to server");
+        let uuid: string | undefined = \$state();
         let fileUploader: FileInputUploader;
         let accept = "video/*";
-      let fileUploadStatus: FileUploadStatus = \$state("present");
+        let fileUploadStatus: FileUploadStatus = \$state("present");
 
 
+       function uploadDoneCallBack(status: FileUploadStatus) {
+          if (status == 'finished') {
+            formStatus = 'Finished Uploading File to server. Please fill in the required form fields';
+            submitBtn.disabled = false;
+          } else {
+            formStatus = 'Finished Uploading File to server.';
+            submitBtn.disabled = true;
+          }
+        }
 
+         onMount(() => {
+          uuid = self.crypto.randomUUID();
+          submitBtn.disabled = false;
+        });
 
     }
       : qq{
@@ -79,79 +64,79 @@ sub gen_component_edit_form {
     };
 
     my $funcs = qq{
-
-
-       function uploadDoneCallBack(status: FileUploadStatus) {
-          fileUploadStatus = status;
-          if (formValidation!.errors.size > 0 && fileUploadStatus == "finished") {
-            formStatus =
-              "Finished Uploading File to server. Please fill in the required form fields";
-          } else {
-            formStatus = "Finished Uploading File to server.";
-          }
-        }
-
         export function resetForm() {
-          form.reset();
-          submitBtn.disabled = true;
-        }
-
-        export function disableSubmitBtn() {
-          // submitBtn.disabled = true;
-        }
-
-        export function cleanUpForm() {
-          console.log("Running cleanup...");
-          // submitBtn.disabled = true;
+          // form.reset();
           fileUploader.cleanUpResources();
         }
 
-        onMount(() => {
-          uuid = self.crypto.randomUUID();
-          formValidation = ${resource_name_singular}Validation;
-          console.log("Edit: ", uuid);
-          if (formValidation?.errors.size == 0 && fileUploadStatus == "present") {
-            submitBtn.disabled = false;
-            console.log("Setting disabled to false from present");
-          }
-        });
+        export function cleanUpForm() {
+          fileUploader.cleanUpResources();
+        }
 
-       \$effect(() => {
-          if (formValidation?.errors.size == 0) {
-            submitBtn.disabled = false;
-          }
-          if (formValidation?.numberOfFields == formValidation?.successful.size) {
-            // Valid form
-            submitBtn.disabled = false;
-          } else if (
-            formValidation?.errors.size == 0 &&
-            fileUploadStatus == "finished"
-          ) {
-            submitBtn.disabled = false;
-          } else if (formValidation!.errors.size > 0) {
-            submitBtn.disabled = true;
-          }
-          if (fileUploadStatus == "progress") {
-            submitBtn.disabled = true;
-          }})
+
     };
 
     my $form =
       Svelte::Funcs::gen_component_edit_form( $file_name, $resource_name_import,
         $resource_name_singular, $resource_name, @fields );
 
-    my $template = qq{
-      <script lang="ts">
-      $imports
-      $vars
-      $funcs
-      </script>
-      $form
+    my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{form\}/,
+                value => ${form}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular\}/,
+                value => ${resource_name_singular}
+            }
+        ),
 
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name\}/,
+                value => ${resource_name}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_import\}/,
+                value => ${resource_name_import}
+            }
+        ),
 
-    };
+        Regex::Regex->new(
+            {
+                regex => qr/\{vars\}/,
+                value => ${vars}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{funcs\}/,
+                value => ${funcs}
+            }
+        ),
 
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
+    );
+
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/components/edit.txt";
+
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
+
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
+
 }
 
 1;

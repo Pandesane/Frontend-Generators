@@ -107,7 +107,6 @@ sub gen_component_edit_form {
 
     my $form_heading      = "Edit $resource_name_singular";
     my $form_submit_label = "Save";
-    my $form_action       = "?/update_$resource_name_singular";
 
     my $form_title = qq{
     <p class="text-center">$form_heading</p>
@@ -132,59 +131,58 @@ sub gen_component_edit_form {
 
     my $form_submit_button = $has_file == 1
       ? qq{
-        <button
-          bind:this={submitBtn}
-          onclick={()=>{
-          closeModal();
-          cleanUpForm();
-          formValidation = {
-            errors: new Map(),
-            success: false,
-            successful: new Map(),
-            numberOfFields: 2,
-          };
-        }}
-        class="btn btn-primary w-full"
-        >$form_submit_label</button
+      <button
+        bind:this={submitBtn}
+        class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
+        transition hover:bg-blue-700 active:scale-[0.98]"
       >
-      <p class="text-sm font-light my-2">
         $form_submit_label
+      </button>
+
+      <p class="text-center text-xs text-slate-500">
+        {formStatus}
       </p>
+
     }
       : qq{
      <button
-          onclick={()=>{
-        closeModal()
-      }}
-      class="btn btn-primary w-full">$form_submit_label</button>
+        bind:this={submitBtn}
+        class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
+        transition hover:bg-blue-700 active:scale-[0.98]"
+      >
+        $form_submit_label
+      </button>
      };
 
-    my $form = qq{
-        <form
-          bind:this={form}
-          onchange={(e) => {
-            formValidation = { ...${resource_name_import}API.validator.validateForm(e, formValidation) };
-            let json = Validator.setFormValidation(formValidation);
-            jsonState = json;
-          }}
-          class="mx-4 mt-8"
-          action="$form_action"
-          method="POST"
-          enctype="multipart/form-data"
-          use:enhance
-        >
-        $form_title
-        <input type="hidden" name="validation" value={jsonState} />
-        <input type="hidden" name="id" value={${resource_name_singular}.id} />
-        <input type="hidden" name="redirect" value={page.url.href} />
-        <input type="hidden" name="relation_id" value={relation_id} />
+     my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{form_title\}/,
+                value => ${form_title}
+            }
+        ),
 
+        Regex::Regex->new(
+            {
+                regex => qr/\{gen_form\}/,
+                value => ${gen_form}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{form_submit_button\}/,
+                value => ${form_submit_button}
+            }
+        ),
 
-        $gen_form
-        $form_submit_button
-        </form>
+    );
 
-    };
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/components/edit_form.txt";
+
+    my $form =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
 
     return $form;
 }
@@ -269,38 +267,52 @@ sub get_component_edit_input {
       @_;
 
     if ( $field_type eq "text" ) {
-        print "Creating text input.... \n";
         my $input = qq{
-          <div class="my-4 flex flex-col">
-            <label for="name">$field_name</label>
-            <input type="text" id="$field_name" value={${resource_name_singular}.$field_name} name="$field_name" />
-            {#if !formValidation?.success}
-              <!-- content here -->
-              <p class="text-red-600 mt-2">{formValidation?.errors.get("$field_name")}</p>
-            {/if}
+          <div class="flex flex-col gap-1.5">
+            <label for="$field_name" class="text-xs font-medium text-slate-600">$field_name</label>
+
+            <input
+              type="text"
+              id="title"
+              {...edit{resource_name_singular_import}Form.fields.$field_name.as('text')}
+              value={${resource_name_singular}.$field_name}
+              class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
+              transition outline-none
+              focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+
+            {#each edit{resource_name_singular_import}Form.fields.$field_name.issues() as issue}
+              <p class="text-xs text-red-500">
+                {issue.message}
+              </p>
+            {/each}
           </div>
         };
         return $input;
     }
     elsif ( $field_type eq "textarea" ) {
-        print "Creating textarea.... \n";
         my $input = qq{
-          <div class="my-4 flex flex-col">
-            <label for="$field_name">$field_name</label>
-            <textarea name="$field_name" id="$field_name" value={${resource_name_singular}.$field_name}
-            ></textarea>
-            {#if !formValidation?.success}
-              <!-- content here -->
-              <p class="text-red-600 mt-2">
-                {formValidation?.errors.get("$field_name")}
+          <div class="flex flex-col gap-1.5">
+            <label for="$field_name" class="text-xs font-medium text-slate-600">$field_name</label>
+
+            <textarea
+              id="$field_name"
+              {...edit{resource_name_singular_import}Form.fields.$field_name.as('text')}
+              class="h-28 resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
+              transition outline-none
+              focus:border-blue-500 focus:ring-2 focus:ring-blue-100">{${resource_name_singular}.$field_name}</textarea
+            >
+
+            {#each edit{resource_name_singular_import}Form.fields.$field_name.issues() as issue}
+              <p class="text-xs text-red-500">
+                {issue.message}
               </p>
-            {/if}
+            {/each}
           </div>
         };
         return $input;
     }
     elsif ( $field_type eq "file" ) {
-        print "Creating file input.... \n";
         my $input = qq{
             <input value={uuid} type="hidden" name="uuid" />
             <FileInputUploader
@@ -317,6 +329,7 @@ sub get_component_edit_input {
         print "Unknown input type";
 
     }
+
 }
 
 sub push_data_to_file {
@@ -447,7 +460,6 @@ sub generate_form_component_data {
 
     my $form_heading      = "Create New  $resource_name_singular";
     my $form_submit_label = "Create";
-    my $form_action       = "?/create_${resource_name_singular}";
 
     my $gen_form   = "";
     my $form_title = qq{
@@ -468,56 +480,64 @@ sub generate_form_component_data {
 
     my $form_submit_button = $has_file == 1
       ? qq{
-
-        <button
-        onclick={(e) => {
-          closeModal();
-          cleanUpForm();
-        }}
+      <button
         disabled
-        class="btn btn-primary w-full"
-        bind:this={submitBtn}>$form_submit_label</button
-          >
-      <p class="text-sm font-light my-2">
+        bind:this={submitBtn}
+        class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white
+        transition-all duration-200
+        hover:bg-indigo-700 hover:shadow-sm
+        active:scale-[0.98]
+        disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+      >
+        $form_submit_label
+      </button>
+
+      <p class="text-center text-xs text-slate-500">
         {formStatus}
       </p>
     }
       : qq{
-     <button
-        onclick={(e) => {
-          closeModal();
-          cleanUpForm();
-        }}
-        disabled
-        class="btn btn-primary w-full"
-        bind:this={submitBtn}>$form_submit_label</button>
+        <button
+          type="submit"
+          class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
+          transition-all duration-200
+          hover:bg-blue-700 hover:shadow-sm
+          active:scale-[0.98]
+          disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+        >
+          $form_submit_label
+        </button>
      };
 
-    my $form = qq{
-        <form
-        bind:this={form}
-          onchange={(e) => {
-            formValidation = { ...${resource_name_import}API.validator.validateForm(e, formValidation) };
-            let json = Validator.setFormValidation(formValidation);
-            jsonState = json;
+    my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{form_title\}/,
+                value => ${form_title}
+            }
+        ),
 
-          }}
-          class="mx-4 mt-8"
-          action="$form_action"
-          method="POST"
-          enctype="multipart/form-data"
-          use:enhance
-        >
-        $form_title
-        <input type="hidden" name="validation" value={jsonState} />
-        <input type="hidden" name="redirect" value={page.url.href} />
-        <input type="hidden" name="relation_id" value={relation_id} />
+        Regex::Regex->new(
+            {
+                regex => qr/\{gen_form\}/,
+                value => ${gen_form}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{form_submit_button\}/,
+                value => ${form_submit_button}
+            }
+        ),
 
-        $gen_form
-        $form_submit_button
-        </form>
+    );
 
-    };
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/routes/new_form.txt";
+
+    my $form =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
 
     return $form;
 

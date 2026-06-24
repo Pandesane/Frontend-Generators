@@ -1,0 +1,26 @@
+
+
+
+
+
+
+<form
+	bind:this={form}
+	class="mx-auto my-6 flex w-full max-w-200 flex-col gap-5"
+	{...createNew{resource_name_singular_import}Form.enhance(async ({ data, submit }) => {
+		await submit();
+		if (v.safeParse(New{resource_name_singular_import}FormSchema, data).success) {
+			closeModal();
+			resetForm();
+		}
+	})}
+>
+  {form_title}
+	<input type="hidden" name="redirect" value={page.url.href} />
+	<input type="hidden" name="relation_id" value={relation_id} />
+
+  {gen_form}
+
+  {form_submit_button}
+
+</form>

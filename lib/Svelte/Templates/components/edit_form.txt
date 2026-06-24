@@ -1,0 +1,30 @@
+
+
+
+
+
+
+
+<form
+	bind:this={form}
+	class="mx-auto my-6 flex w-full max-w-200 flex-col gap-5"
+	{...edit{resource_name_singular_import}Form.for({resource_name_singular}.id).enhance(async ({ data, submit, form }) => {
+		await submit();
+		if (v.safeParse(Edit{resource_name_singular_import}FormSchema, data).success) {
+			closeModal();
+			cleanUpForm();
+		}
+	})}
+>
+	{form_title}
+
+	<!-- HIDDEN -->
+	<input type="hidden" name="id" value={{resource_name_singular}.id} />
+	<input type="hidden" name="redirect" value={page.url.href} />
+	<input type="hidden" name="relation_id" value={relation_id} />
+
+{gen_form}
+
+{form_submit_button}
+
+</form>

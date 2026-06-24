@@ -3,87 +3,57 @@ package Svelte::Components::Index;
 use strict;
 use diagnostics;
 
-use lib "lib";
-use Svelte::Funcs;
-
 use base "Exporter";
 
-our @EXPORT_OK = qw();
+use lib "lib", "/home/pande/bin/lib";
+
+use Regex::Regex;
+use Regex::RegexHelpers;
+
+our @EXPORT_OK = qw(gen_component_index);
 
 sub gen_component_index {
-    print "Generating component index.......... \n";
     my ( $file_name, $resource_name, $resource_name_import,
         $resource_name_singular, $resource_name_singular_import, @fields )
       = @_;
 
-    my $template = qq{
-<script lang="ts">
-  import type I${resource_name_singular_import} from "\$lib/interfaces/I${resource_name_singular_import}";
-  import ${resource_name_singular_import}Component from "./${resource_name_singular_import}Component.svelte";
-  import ${resource_name_singular_import}NewForm from "./${resource_name_singular_import}NewForm.svelte";
-  let dialogElementAdd: HTMLDialogElement;
+    my @match_expressions = (
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular_import\}/,
+                value => ${resource_name_singular_import}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_singular\}/,
+                value => ${resource_name_singular}
+            }
+        ),
 
-  let { ${resource_name} , relation_id}: { ${resource_name}: I${resource_name_singular_import}[], relation_id: string | number } = \$props();
-    let ${resource_name_singular}NewForm: ${resource_name_singular_import}NewForm;
-    let ${resource_name_singular}FormValidation = \$state({
-      errors: new Map(),
-      success: false,
-      successful: new Map(),
-      numberOfFields: 2,
-    });
-</script>
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name\}/,
+                value => ${resource_name}
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{resource_name_import\}/,
+                value => ${resource_name_import}
+            }
+        ),
 
-<div class="mx-2 mt-4">
-  <div class="flex justify-between">
-    <p class="font-medium text-xl">${resource_name_import} Listing</p>
-    <button
-      onclick={() => {
-        dialogElementAdd.showModal();
-        ${resource_name_singular}NewForm.resetForm();
-      }}
-      class="btn btn-link"
-    >
-      Add
-    </button>
-  </div>
+    );
 
-  <div class="mt-4 w-full">
-    {#each ${resource_name} as ${resource_name_singular}}
-      <${resource_name_singular_import}Component  {relation_id} {${resource_name_singular}} />
-    {/each}
-  </div>
-</div>
+# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
+    my $template_filename = "./lib/Svelte/Templates/components/index.txt";
 
-<!-- Add New ${resource_name_singular_import}File -->
-<dialog bind:this={dialogElementAdd} class="modal">
-  <div class="modal-box">
+    my $template_data =
+      Regex::RegexHelpers::gen_from_regex_template( $template_filename,
+        @match_expressions );
 
-    <${resource_name_singular_import}NewForm
-      bind:this={${resource_name_singular}NewForm}
-      ${resource_name_singular}Form={${resource_name_singular}FormValidation}
-      closeModal={() => {
-        dialogElementAdd.close();
-      }}
-      {relation_id}
-    />
-
-    <div class="modal-action">
-      <button
-         onclick={() => {
-          dialogElementAdd.close();
-          ${resource_name_singular}NewForm.cleanUpForm();
-        }}
-        class="btn btn-primary my-4">Close</button
-      >
-    </div>
-  </div>
-</dialog>
-
-
-    };
-
-    Svelte::Funcs::push_data_to_file( $file_name, $template );
-
+    Svelte::Funcs::push_data_to_file( $file_name, $template_data );
 }
 
 1;

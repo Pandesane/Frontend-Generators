@@ -287,6 +287,8 @@ sub gen_api_interface_schema {
     my $remote_path =
       "$lib_base_path/remote/${resource_name_singular}.remote.ts";
     if ( !( -f "$remote_path" ) ) {
+        print "Generated remote file $remote_path \n";
+
         `touch "$remote_path"`;
         Svelte::Remote::gen_remote_functions( "$remote_path",
             $resource_name_singular_import,

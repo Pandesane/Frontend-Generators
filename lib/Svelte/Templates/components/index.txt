@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { getVideoSkits } from '$lib/remote/video_skit.remote';
-	import VideoskitComponent from './VideoskitComponent.svelte';
-	import VideoskitNewForm from './VideoskitNewForm.svelte';
+	import { get{resource_name_import}  } from '$lib/remote/{resource_name_singular}.remote';
+	import {resource_name_singular_import}Component from './{resource_name_singular_import}Component.svelte';
+	import {resource_name_singular_import}NewForm from './{resource_name_singular_import}NewForm.svelte';
 	let dialogElementAdd: HTMLDialogElement;
 
 	let { relation_id }: { relation_id: string | number } = $props();
-	let videoskitNewForm: VideoskitNewForm;
+	let {resource_name_singular}NewForm: {resource_name_singular_import}NewForm;
 
-	let videoskits = $derived(await getVideoSkits());
+	let {resource_name} = $derived(await get{resource_name_import}());
 </script>
 
 <div class="mx-2 mt-4">
 	<div class="mb-5 flex items-start justify-between border-b border-slate-100 pb-3">
 		<!-- TITLE BLOCK -->
 		<div class="flex flex-col gap-1">
-			<p class="text-sm font-semibold tracking-tight text-slate-900">Videoskits</p>
+			<p class="text-sm font-semibold tracking-tight text-slate-900">{resource_name_import}</p>
 
 			<p class="text-xs leading-snug text-slate-400">
-				Visual explanations for understanding and self-management
+				Support text here
 			</p>
 		</div>
 
@@ -25,7 +25,7 @@
 		<button
 			onclick={() => {
 				dialogElementAdd.showModal();
-				videoskitNewForm.resetForm();
+				{resource_name_singular}NewForm.resetForm();
 			}}
 			class="flex items-center gap-1 text-xs font-medium text-blue-600 transition hover:text-blue-700"
 		>
@@ -35,17 +35,17 @@
 	</div>
 
 	<div class="mt-4 w-full">
-		{#each videoskits as videoskit}
-			<VideoskitComponent {relation_id} {videoskit} />
+		{#each  {resource_name} as {resource_name_singular}}
+			<{resource_name_singular_import}Component  {relation_id} {{resource_name_singular}} />
 		{/each}
 	</div>
 </div>
 
-<!-- Add New VideoskitFile -->
+<!-- Add New  {resource_name_singular_import} -->
 <dialog bind:this={dialogElementAdd} class="modal">
 	<div class="modal-box max-h-[80vh]">
-		<VideoskitNewForm
-			bind:this={videoskitNewForm}
+		<{resource_name_singular_import}NewForm
+			bind:this={{resource_name_singular}NewForm}
 			closeModal={() => {
 				dialogElementAdd.close();
 			}}
@@ -56,7 +56,7 @@
 			<button
 				onclick={() => {
 					dialogElementAdd.close();
-					videoskitNewForm.resetForm();
+					{resource_name_singular}NewForm.resetForm();
 				}}
 				class="btn my-4 btn-primary">Close</button
 			>

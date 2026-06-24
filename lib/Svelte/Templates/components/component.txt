@@ -1,0 +1,80 @@
+<script lang="ts">
+	import { page } from '$app/state';
+	import type I{resource_name_singular_import} from '$lib/interfaces/I{resource_name_singular_import}';
+	import { delete{resource_name_import}Form } from '$lib/remote/{resource_name_singular}.remote';
+	import {resource_name_singular_import}EditForm from './{resource_name_singular_import}EditForm.svelte';
+
+interface IProps{
+  {resource_name_singular}: I{resource_name_singular_import};
+	relation_id: string | number
+}
+	let { {resource_name_singular}, relation_id }:IProps =$props();
+
+	let dialogElementEdit: HTMLDialogElement;
+	let {resource_name_singular}EditForm: {resource_name_singular_import}EditForm;
+</script>
+
+<div class="relative my-8 flex flex-col gap-4 pl-4">
+
+
+	<div class="flex flex-col gap-4 md:flex-row md:gap-6">
+
+		{gen_divs}
+
+			<!-- ACTIONS -->
+			<div class="mt-auto flex items-center gap-4 pt-2">
+				<form {...delete{resource_name_import}Form.for({resource_name_singular}.id)}>
+					<input type="hidden" name="id" value={{resource_name_singular}.id} />
+					<input type="hidden" name="redirect" value={page.url.href} />
+					<input type="hidden" name="relation_id" value={relation_id} />
+
+					<button
+						onclick={(e) => {
+							let btn = e.target as HTMLButtonElement;
+							btn.innerText = 'Deleting...';
+						}}
+						class="flex items-center gap-1 text-xs font-medium text-red-600 transition hover:text-red-700"
+					>
+						<span class="icon-[hugeicons--delete-02] size-4"></span>
+						Delete
+					</button>
+				</form>
+
+				<button
+					onclick={() => {
+						dialogElementEdit.showModal();
+					}}
+					class="flex items-center gap-1 text-xs font-medium text-blue-600 transition hover:text-blue-700"
+				>
+					<span class="icon-[hugeicons--edit-02] size-4"></span>
+					Edit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Edit {resource_name_singular_import} -->
+<dialog bind:this={dialogElementEdit} class="modal">
+	<div class="modal-box max-h-[80vh]">
+		<{resource_name_singular_import}EditForm
+			bind:this={{resource_name_singular}EditForm}
+			closeModal={() => {
+				dialogElementEdit.close();
+			}}
+			{{resource_name_singular}}
+			{relation_id}
+		/>
+
+		<div class="modal-action">
+			<button
+				onclick={() => {
+					dialogElementEdit.close();
+					{resource_name_singular}EditForm.resetForm();
+					{resource_name_singular}EditForm.cleanUpForm();
+				}}
+				class="btn my-4 btn-primary">Close</button
+			>
+		</div>
+	</div>
+</dialog>
