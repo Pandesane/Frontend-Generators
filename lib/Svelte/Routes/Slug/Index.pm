@@ -63,7 +63,9 @@ sub gen_slug_page_svelte {
     );
 
 
- my $template_filename = "./lib/Svelte/Templates/routes/slug.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/routes/slug.txt";
+
+#  my $template_filename = "./lib/Svelte/Templates/routes/slug.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

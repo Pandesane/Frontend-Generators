@@ -29,14 +29,6 @@ sub gen_component_new_form {
 
     my $default_vars = qq{
        // Defaults
-        let { ${resource_name_singular}Form, closeModal , relation_id }: {
-                        ${resource_name_singular}Form: any;
-                        closeModal: () => void;
-                        relation_id : string | number;
-                      } = \$props();
-
-
-
           let formStatus = \$state("Enabled after file is uploaded to server");
           let form: HTMLFormElement;
           let submitBtn: HTMLButtonElement;
@@ -136,8 +128,8 @@ sub gen_component_new_form {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/components/new.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/components/new.txt";
+    # my $template_filename = "./lib/Svelte/Templates/components/new.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

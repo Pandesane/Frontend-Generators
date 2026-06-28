@@ -1,5 +1,7 @@
 defmodule HealthierWeb.Api.{api_module}JSON do
   alias Vendor.{context}.{api_module}
+  alias Processes.File.{FileStorage}
+
 
    def index(%{{api_module_lc_plural}: {api_module_lc_plural}}) do
         %{data: for({api_module_lc_singular} <- {api_module_lc_plural}, do: data({api_module_lc_singular}))}
@@ -36,6 +38,7 @@ defmodule HealthierWeb.Api.{api_module}JSON do
 
       def data(%{api_module}{} = {api_module_lc_singular}) do
           %{
+          # field_url: FileStorage.get_url({api_module_lc_singular}.file_path)
           # Defaults
             id:  {api_module_lc_singular}.id,
             created_at:  {api_module_lc_singular}.inserted_at,

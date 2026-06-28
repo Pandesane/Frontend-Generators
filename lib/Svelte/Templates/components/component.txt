@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type I{resource_name_singular_import} from '$lib/interfaces/I{resource_name_singular_import}';
-	import { delete{resource_name_import}Form } from '$lib/remote/{resource_name_singular}.remote';
+	import { delete{resource_name_singular_import}Form } from '$lib/remote/{resource_name_singular}.remote';
 	import {resource_name_singular_import}EditForm from './{resource_name_singular_import}EditForm.svelte';
 
 interface IProps{
@@ -23,7 +23,7 @@ interface IProps{
 
 			<!-- ACTIONS -->
 			<div class="mt-auto flex items-center gap-4 pt-2">
-				<form {...delete{resource_name_import}Form.for({resource_name_singular}.id)}>
+				<form {...delete{resource_name_singular_import}Form.for({resource_name_singular}.id)}>
 					<input type="hidden" name="id" value={{resource_name_singular}.id} />
 					<input type="hidden" name="redirect" value={page.url.href} />
 					<input type="hidden" name="relation_id" value={relation_id} />
@@ -52,7 +52,6 @@ interface IProps{
 			</div>
 		</div>
 	</div>
-</div>
 
 <!-- Edit {resource_name_singular_import} -->
 <dialog bind:this={dialogElementEdit} class="modal">

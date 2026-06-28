@@ -128,8 +128,8 @@ sub gen_component_edit_form {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/components/edit.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/components/edit.txt";
+    # my $template_filename = "./lib/Svelte/Templates/components/edit.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

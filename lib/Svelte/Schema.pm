@@ -63,8 +63,8 @@ sub gen_resource_schema {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/schema.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/schema.txt";
+    # my $template_filename = "./lib/Svelte/Templates/schema.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

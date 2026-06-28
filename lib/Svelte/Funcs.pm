@@ -88,8 +88,8 @@ sub gen_edit_form {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/routes/edit_form.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/routes/edit_form.txt";
+    # my $template_filename = "./lib/Svelte/Templates/routes/edit_form.txt";
 
     my $form =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,
@@ -177,8 +177,8 @@ sub gen_component_edit_form {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/components/edit_form.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/components/edit_form.txt";
+    # my $template_filename = "./lib/Svelte/Templates/components/edit_form.txt";
 
     my $form =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,
@@ -443,8 +443,8 @@ sub generate_form_data {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/routes/new_form.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/routes/new_form.txt";
+    # my $template_filename = "./lib/Svelte/Templates/routes/new_form.txt";
 
     my $form =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,
@@ -532,8 +532,8 @@ sub generate_form_component_data {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/routes/new_form.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/routes/new_form.txt";
+    # my $template_filename = "./lib/Svelte/Templates/routes/new_form.txt";
 
     my $form =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,
@@ -618,6 +618,8 @@ sub get_input {
                     bind:uuid={uuid!}
                     {uploadDoneCallBack}
                     label="File Name"
+                    bind:this={fileUploader}
+
                   />
 
                 </div>

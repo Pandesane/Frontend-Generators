@@ -7,7 +7,7 @@ import type I{resource_name_singular_import} from "$lib/interfaces/I{resource_na
 import { createToast } from "$lib/state/AddToast.svelte";
 import { New{resource_name_singular_import}FormSchema,
  Edit{resource_name_singular_import}FormSchema,
- Delete{resource_name_singular_import}Schema} from "$lib/schemas/{resource_name_singular_import}Schema.ts";
+ Delete{resource_name_singular_import}Schema} from "$lib/schemas/{resource_name_singular_import}Schema";
 import { redirect } from "@sveltejs/kit";
 import * as v from "valibot"
 

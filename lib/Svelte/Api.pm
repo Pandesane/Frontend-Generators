@@ -36,12 +36,18 @@ sub gen_resource_api {
                 value => ${resource_name_import}
             }
         ),
+         Regex::Regex->new(
+            {
+                regex => qr/\{resource_name\}/,
+                value => ${resource_name}
+            }
+        ),
 
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/api.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/api.txt";
+    # my $template_filename = "./lib/Svelte/Templates/api.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

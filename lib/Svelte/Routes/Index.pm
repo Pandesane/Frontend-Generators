@@ -88,8 +88,8 @@ sub gen_index_page_svelte {
 
     );
 
-# my $template_filename = "/home/pande/bin/lib/" . "Phoenix/Templates/schema_json_with_file.txt";
-    my $template_filename = "./lib/Svelte/Templates/routes/index.txt";
+my $template_filename = "/home/pande/bin/lib/" . "Svelte/Templates/routes/index.txt";
+    # my $template_filename = "./lib/Svelte/Templates/routes/index.txt";
 
     my $template_data =
       Regex::RegexHelpers::gen_from_regex_template( $template_filename,

@@ -11,15 +11,15 @@ export const {resource_name_singular_import}Schema = v.object({
 
 
 
-const New{resource_name_singular_import}FormSchema = v.object({
+export const New{resource_name_singular_import}FormSchema = v.object({
  {gen_fields}
  })
 
 
-const Edit{resource_name_singular_import}FormSchema = v.object({
+export const Edit{resource_name_singular_import}FormSchema = v.object({
   {gen_fields}
  })
 
-const Delete{resource_name_singular_import}Schema = v.object({
+export const Delete{resource_name_singular_import}Schema = v.object({
    {gen_fields}
 })
