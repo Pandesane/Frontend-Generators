@@ -4,4 +4,5 @@ src/*
 gen/*
 .svelte
 examples/*
-vendor_web/*
+vendor_web/
+vendor/

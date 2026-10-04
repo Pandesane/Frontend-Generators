@@ -1,0 +1,22 @@
+defmodule VendorWeb.Api.{api_module}JSON do
+
+  def index(%{{api_module_lc_plural}: {api_module_lc_plural}}) do
+    %{data: {api_module_lc_plural}}
+  end
+
+  def create(_assigns) do
+    %{response: "success"}
+  end
+
+  def update(_assigns) do
+    %{response: "success"}
+  end
+
+  def show(%{{api_module_lc_singular}: {api_module_lc_singular}}) do
+    %{data: {api_module_lc_singular}}
+  end
+
+  def delete(_assigns) do
+    %{response: "success"}
+  end
+end

@@ -107,8 +107,9 @@ if (   $resource_type eq "help"
         # Run command
         ``` $ paj (help | --help | -h)```
 
-
-
+        Added generation for mongo schema and api
+        ``` paj gen.mongo.api ShopContext ProductAd:product_ad name description file```
+        paj gen.mongo.schema ShopContext ProductAdi:product_adi name description file
 
   };
 
@@ -157,6 +158,54 @@ elsif ( $resource_type eq "gen.file_server" ) {
       ( Regex::Regex->new( { regex => qr/\{app_name\}/, value => $app_name } ),
       );
     gen_file_server(@match_expressions);
+}
+
+elsif ( $resource_type eq "gen.mongo.api" ) {
+    print "Generating Mongo Api\n";
+
+    my $api_base_path = "lib/vendor_web/controllers/api";
+    `mkdir -p "$api_base_path"`;
+
+    my $mongo_api_file  = "$api_base_path/$module_file_name.ex";
+    my $mongo_json_file = "$api_base_path/${module_file_name}_json.ex";
+    if ( !( -f "$mongo_api_file" ) ) {
+        `touch "$mongo_api_file"`;
+        gen_mongo_api_controller($mongo_api_file);
+
+    }
+
+    if ( !( -f "$mongo_json_file" ) ) {
+        `touch "$mongo_json_file"`;
+        gen_mongo_api_json($mongo_json_file);
+
+    }
+
+    my $mongo_base_path = "lib/vendor/mongo";
+    `mkdir -p "$mongo_base_path"`;
+
+    # # Make index files
+    #  API controller
+    my $mongo_schema_file = "$mongo_base_path/$module_file_name.ex";
+    if ( !( -f "$mongo_schema_file" ) ) {
+        `touch "$mongo_schema_file"`;
+        gen_mongo_schema_and_api_controller($mongo_schema_file);
+
+    }
+}
+
+elsif ( $resource_type eq "gen.mongo.schema" ) {
+    print "Generating Mongo Schema\n";
+
+    $base_path = "lib/vendor/mongo";
+    `mkdir -p "$base_path"`;
+
+    # # Make index files
+    #  API controller
+    my $mongo_schema_file = "$base_path/$module_file_name.ex";
+    if ( !( -f "$mongo_schema_file" ) ) {
+        `touch "$mongo_schema_file"`;
+        gen_mongo_schema_and_api_controller($mongo_schema_file);
+    }
 }
 
 sub gen_api_json {
@@ -234,6 +283,149 @@ sub gen_api_controller {
       gen_from_template( $template_filename, @match_expressions );
     push_data_to_file( $file_name, $template_data );
 
+}
+
+sub gen_mongo_schema_and_api_controller {
+
+    my ($file_name) = @_;
+
+    my $mongo_collection_attributes   = gen_mongo_collection_attributes();
+    my $mongo_json_encoder_attributes = gen_json_encoder_mongo_attributes();
+
+    my @match_expressions = (
+        Regex::Regex->new( { regex => qr/\{context\}/, value => $context } ),
+        Regex::Regex->new(
+            { regex => qr/\{api_module\}/, value => $api_module }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_plural\}/,
+                value => $api_module_lc_plural
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_singular\}/,
+                value => $api_module_lc_singular
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{mongo_collection_attributes\}/,
+                value => $mongo_collection_attributes
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{mongo_json_encoder_attributes\}/,
+                value => $mongo_json_encoder_attributes
+            }
+        ),
+
+    );
+    my $template_filename =
+
+      "/home/pande/bin/lib/" . "Phoenix/Templates/mongo_schema.txt";
+
+    #   "./lib/Phoenix/Templates/mongo_schema.txt";
+
+    my $template_data =
+      gen_from_template( $template_filename, @match_expressions );
+    push_data_to_file( $file_name, $template_data );
+
+}
+
+sub gen_mongo_api_controller {
+
+    my ($file_name) = @_;
+
+    my @match_expressions = (
+        Regex::Regex->new( { regex => qr/\{context\}/, value => $context } ),
+        Regex::Regex->new(
+            { regex => qr/\{api_module\}/, value => $api_module }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_plural\}/,
+                value => $api_module_lc_plural
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_singular\}/,
+                value => $api_module_lc_singular
+            }
+        ),
+
+    );
+    my $template_filename =
+
+      "/home/pande/bin/lib/" . "Phoenix/Templates/mongo_api.txt";
+
+    #   "./lib/Phoenix/Templates/mongo_api.txt";
+
+    my $template_data =
+      gen_from_template( $template_filename, @match_expressions );
+    push_data_to_file( $file_name, $template_data );
+
+}
+
+sub gen_mongo_api_json {
+
+    my ($file_name) = @_;
+
+    my @match_expressions = (
+        Regex::Regex->new(
+            { regex => qr/\{api_module\}/, value => $api_module }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_plural\}/,
+                value => $api_module_lc_plural
+            }
+        ),
+        Regex::Regex->new(
+            {
+                regex => qr/\{api_module_lc_singular\}/,
+                value => $api_module_lc_singular
+            }
+        ),
+
+    );
+    my $template_filename =
+
+      "/home/pande/bin/lib/" . "Phoenix/Templates/mongo_api_json.txt";
+
+    #   "./lib/Phoenix/Templates/mongo_api_json.txt";
+
+    my $template_data =
+      gen_from_template( $template_filename, @match_expressions );
+    push_data_to_file( $file_name, $template_data );
+
+}
+
+sub gen_mongo_collection_attributes {
+
+    # my (@attributes) = @_;
+    my $gen_attributes = "";
+    foreach my $attribute (@fields) {
+        my $gen_attribute_line = "attribute(:" . $attribute . ", String.t())";
+        $gen_attributes = $gen_attributes . "\n" . $gen_attribute_line;
+    }
+
+    return $gen_attributes;
+}
+
+sub gen_json_encoder_mongo_attributes {
+
+    # my (@attributes) = @_;
+    my $gen_attributes = "";
+    foreach my $attribute (@fields) {
+        my $gen_attribute_line = ":" . $attribute . ",";
+        $gen_attributes = $gen_attributes . "\n" . $gen_attribute_line;
+    }
+
+    return $gen_attributes;
 }
 
 sub push_data_to_file {

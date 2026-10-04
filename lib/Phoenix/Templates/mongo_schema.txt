@@ -1,0 +1,117 @@
+defmodule Vendor.{context}.Mongo{api_module} do
+  @collection "{api_module_lc_plural}"
+  @list_key_name "{api_module_lc_plural}"
+  @name :mongo
+
+  use Mongo.Collection
+  alias Redis.RedisClient
+
+  @derive {JSON.Encoder, only: [:id, {mongo_json_encoder_attributes}]}
+
+  collection "{api_module_lc_plural}" do
+    attribute(:id, String.t(), derived: true)
+
+    {mongo_collection_attributes}
+
+    timestamps()
+    after_load(&__MODULE__.after_load/1)
+    before_dump(&__MODULE__.before_dump/1)
+  end
+
+  def after_load(%__MODULE__{_id: id} = {api_module_lc_singular}) do
+    %__MODULE__{{api_module_lc_singular} | id: BSON.ObjectId.encode!(id)}
+  end
+
+  def before_dump({api_module_lc_singular}) do
+    %__MODULE__{{api_module_lc_singular} | id: nil}
+  end
+
+  # CRUD operations
+  def list() do
+    case RedisClient.get(@list_key_name) do
+      nil ->
+        dbg("Cache MISS: ")
+
+        value =
+          Mongo.find(@name, @collection, %{})
+          |> Enum.to_list()
+          |> Enum.map(fn v ->
+            v |> load()
+          end)
+          |> JSON.encode!()
+
+        RedisClient.insert(@list_key_name, value)
+        value
+
+      value ->
+        dbg("Cache HIT: ")
+        value
+    end
+    |> JSON.decode!()
+  end
+
+  def get!(id) do
+    case RedisClient.get(id) do
+      nil ->
+        dbg("Cache MISS: ")
+        object_id = string_to_object_id(id)
+
+        case Mongo.find_one(@name, @collection, %{"_id" => object_id}) |> load() |> dbg do
+          nil ->
+            nil
+
+          {api_module_lc_singular} ->
+            value = {api_module_lc_singular} |> JSON.encode!() |> dbg
+            RedisClient.insert(id, value)
+            value
+        end
+
+      value ->
+        dbg("Cache HIT: ")
+        value
+    end
+    |> JSON.decode!()
+  end
+
+  def create(params) do
+    Mongo.insert_one(@name, @collection, params)
+
+    Task.async(fn ->
+      Task.await(RedisClient.delete(@list_key_name))
+      list()
+    end)
+  end
+
+  def update(id, params) do
+    object_id = string_to_object_id(id)
+    Mongo.update_one(@name, @collection, %{"_id" => object_id}, %{"$set": params})
+
+    Task.async(fn ->
+      Task.await(RedisClient.delete(id))
+      Task.await(RedisClient.delete(@list_key_name))
+      get!(id)
+      list()
+    end)
+  end
+
+  def delete(id) do
+    object_id = string_to_object_id(id)
+    Mongo.delete_one(@name, @collection, %{"_id" => object_id})
+
+    Task.async(fn ->
+      Task.await(RedisClient.delete(id))
+      Task.await(RedisClient.delete(@list_key_name))
+      list()
+    end)
+  end
+
+  defp object_id_to_string(id) do
+    BSON.ObjectId.encode!(id)
+  end
+
+  defp string_to_object_id(id_string) do
+    dbg(id_string)
+    {:ok, id} = BSON.ObjectId.decode(id_string)
+    id
+  end
+end
