@@ -10,10 +10,12 @@ defmodule Vendor.{context}.Mongo{api_module} do
 
   collection "{api_module_lc_plural}" do
     attribute(:id, String.t(), derived: true)
+    attribute(:created_at, DateTime.t(), default: &DateTime.utc_now/0)
+    attribute(:updated_at, DateTime.t(), default: &DateTime.utc_now/0)
+
 
     {mongo_collection_attributes}
 
-    timestamps()
     after_load(&__MODULE__.after_load/1)
     before_dump(&__MODULE__.before_dump/1)
   end
@@ -74,6 +76,8 @@ defmodule Vendor.{context}.Mongo{api_module} do
   end
 
   def create(params) do
+    default_params = __MODULE__.new() |> dump() |> dbg
+    params = Map.merge(default_params, params)
     Mongo.insert_one(@name, @collection, params)
 
     Task.async(fn ->
@@ -84,7 +88,8 @@ defmodule Vendor.{context}.Mongo{api_module} do
 
   def update(id, params) do
     object_id = string_to_object_id(id)
-    Mongo.update_one(@name, @collection, %{"_id" => object_id}, %{"$set": params})
+    new_params = Map.put(params, "updated_at", DateTime.utc_now())
+    Mongo.update_one(@name, @collection, %{"_id" => object_id}, %{"$set": new_params})
 
     Task.async(fn ->
       Task.await(RedisClient.delete(id))
